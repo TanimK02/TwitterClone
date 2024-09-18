@@ -1,0 +1,113 @@
+.sideNav-div{
+    top: 0;
+    left: 0;
+    width: 20%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: black;
+    margin: 0;
+    border: none;
+    border-right: 1px solid rgba(255, 255, 255, 0.183);
+}
+
+.nav-list{
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    height: 60%;
+    padding-left: 15%;
+    padding-right: 20px;
+}
+
+.logo h1{
+    margin-bottom: -20px;
+}
+
+.nav-list a, .nav-list button{
+    flex-grow: 1;
+    text-decoration: none;
+    color: white;
+    overflow-x: hidden;
+}
+
+.nav-list a{
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    
+}
+
+.nav-list a label{
+    font-size: 30px;
+}
+
+.nav-list a h1{
+    font-size: 33px;
+}
+.nav-list button{
+    background-color: #1DA1F2;
+    border: none;
+    border-radius: 2.5em;
+    margin-left: -10%;
+}
+
+.nav-list button p{
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.nav-list button img{
+    display: none;
+}
+
+.nav-list a img{
+    filter: invert(100%);
+}
+
+.nav-list:visited{
+    color: white;
+}
+
+@media (max-width: 1300px){
+    .nav-list a label{
+        display: none;
+    }
+
+    .sideNav-div{
+        top: 0;
+        left: 0;
+        width: 12%;
+        height: 100%;
+    }
+    .nav-list button{
+        background-color: #1DA1F2;
+        border: none;
+        border-radius: 50%;
+        flex-grow: 0;
+        height: 48px;
+        width: 48px;
+        margin-left: 0%;
+    }
+
+    .nav-list{
+        align-items: center;
+    }
+
+    .nav-list button{
+        vertical-align: middle;
+        height: 60px;
+        width: 60px;
+        
+    }
+
+    .nav-list button p{
+        display: none;
+    }
+
+    .nav-list button img{
+        display: inline-block;
+        filter: invert(100%);
+    }
+    
+}
