@@ -1,0 +1,35 @@
+.topNav-div{
+    top: 0;
+    position: sticky;
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    height: 8%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.183);
+}
+
+.tabs{
+    width: 100%;
+    display: flex;
+}
+
+.for-you{
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.following{
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+div a span{
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}

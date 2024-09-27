@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import homePic from '@/public/home.svg'
 import searchPic from '@/public/search.svg'

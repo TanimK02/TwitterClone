@@ -1,7 +1,5 @@
 .sideNav-div{
-    top: 0;
-    left: 0;
-    width: 20%;
+
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -9,6 +7,8 @@
     margin: 0;
     border: none;
     border-right: 1px solid rgba(255, 255, 255, 0.183);
+    grid-column: 1/2;
+    font-weight: 500;
 }
 
 .nav-list{
@@ -22,6 +22,7 @@
 
 .logo h1{
     margin-bottom: -20px;
+
 }
 
 .nav-list a, .nav-list button{
@@ -69,17 +70,19 @@
     color: white;
 }
 
+label:hover{
+    cursor: pointer;
+}
+
+button:hover{
+    cursor: pointer;
+}
+
 @media (max-width: 1300px){
     .nav-list a label{
         display: none;
     }
 
-    .sideNav-div{
-        top: 0;
-        left: 0;
-        width: 12%;
-        height: 100%;
-    }
     .nav-list button{
         background-color: #1DA1F2;
         border: none;
