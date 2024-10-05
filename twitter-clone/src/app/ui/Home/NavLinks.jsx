@@ -6,7 +6,6 @@ import messagePic from '@/public/messages.svg'
 import communityPic from '@/public/communities.svg'
 import profilePic from '@/public/profile.svg'
 import Image from 'next/image';
-import logo from '@/public/logo.svg'
 
 export default function NavLinks() {
 

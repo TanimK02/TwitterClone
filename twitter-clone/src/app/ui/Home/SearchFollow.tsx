@@ -5,7 +5,7 @@ import Link from 'next/link'
 import profile from '@/public/profile.svg'
 export default function SearchFollow() {
 
-    let links = []
+    const links = []
     for (let i = 0; i < 30  ; i ++) {
         links.push(
         <Link href="" key={i}>
