@@ -1,7 +1,7 @@
 // app/layout.tsx (or layout.js)
-import '@/app/globals.css'; // Import your global CSS file if necessary
 
 import { ReactNode } from 'react';
+import SideNav from '@/app/ui/Home/SideNav';
 
 export const metadata = {
   title: 'Twitter/X clone',
@@ -16,9 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-
+      <div className='alignment'>
+        <SideNav></SideNav>
         {children}
-        
+        </div>        
         </body>
     </html>
   );

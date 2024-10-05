@@ -9,6 +9,7 @@
     border-right: 1px solid rgba(255, 255, 255, 0.183);
     grid-column: 1/2;
     font-weight: 500;
+    position: sticky;
 }
 
 .nav-list{
@@ -49,7 +50,7 @@
 .nav-list button{
     background-color: #1DA1F2;
     border: none;
-    border-radius: 2.5em;
+    border-radius: 40px;
     margin-left: -10%;
 }
 
@@ -64,6 +65,10 @@
 
 .nav-list a img{
     filter: invert(100%);
+}
+
+.nav-list a:first-child img{
+    filter: invert(0%);
 }
 
 .nav-list:visited{

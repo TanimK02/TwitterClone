@@ -13,23 +13,30 @@
     display: flex;
 }
 
-.for-you{
+.for-you, .following{
+    position: relative;
     width: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
 }
-
-.following{
-    width: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
 
 div a span{
     color: white;
     font-size: 20px;
     font-weight: bold;
+}
+
+a {
+    text-decoration: none;
+
+  }
+
+.blue-line{
+    position:absolute;
+    bottom: 0;
+    background-color: #1DA1F2;
+    height: 6px;
+    border-radius: 8px;
+    
 }

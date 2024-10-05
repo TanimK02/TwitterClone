@@ -1,0 +1,107 @@
+.logo-container{
+    height: 90%;
+    display: flex;
+    align-items: center;
+    justify-content:center;
+    width: 50%;
+    overflow: hidden;
+    min-height: 500px;
+}
+
+.logo-container svg{
+    margin-top: 30px;
+}
+
+.container{
+    min-height: 500px;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    overflow:auto;
+}
+
+.signUpLogin-Container{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 50%;
+    overflow: hidden;
+    
+}
+
+.signUpLogin-Container h1{
+    margin-top: 100px;
+    font-size: 85px;
+    font-weight: 800;
+    font-stretch: 120%;
+}
+
+.signUpLogin-Container h2{
+    margin-top: 80px;
+    font-size: 40px;
+    font-weight: 800;
+}
+
+fieldset{
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    border-top-width: 2px;
+    border-color: rgba(255, 255, 255, 0.2);
+    margin-top: 1em;
+  }
+
+.signUp{
+    display: flex;
+    flex-direction: column;
+    margin-top: 30px;
+    width: 375px;
+}
+
+.signUp button{
+    height: 55px;  
+    width: 375px; 
+    border-radius: 40px;
+    border: none;
+    background-color: white;
+    color: black;
+    margin-top: 10px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    font-size: larger;
+}
+
+.signUp button:nth-of-type(2), .signUp button:nth-of-type(4), .signUp button:nth-of-type(3) {
+    font-weight: bold;
+}
+
+.signUp button:nth-of-type(3){
+    color: white;
+    background-color: #1DA1F2;
+}
+
+.signUp p{
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.signUp h3{
+    margin-top: 80px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+legend{
+    text-align: center;
+}
+
+
+.signUp button:nth-of-type(4){
+    margin-top: 25px;
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.315);;
+    color: #1DA1F2;
+}
