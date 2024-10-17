@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String        @id @default(cuid())
+  username         String?       @unique @db.VarChar(50)
+  email            String        @unique @db.VarChar(100)
+  name             String        @db.VarChar(100)
+  oAuthProvider    OAuthType?
+  oAuthId          String?
+  password_hash    String?
+  display_name     String?       @db.VarChar(100)
+  bio              String?
+  profileImageUrl  String?       @map("profile_image_url")
+  coverImageUrl    String?       @map("cover_image_url")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime?     @updatedAt @map("updated_at")
+  tweets           Tweet[]
+  followedBy       User[]        @relation("UserFollows")
+  following        User[]        @relation("UserFollows")
+  likes            Likes[]
+  messagesSent     Messages[]    @relation("MessagesSent")
+  messagesReceived Messages[]    @relation("MessagesReceived")
+  settings         UserSettings?
+}
+
+enum OAuthType {
+  GOOGLE
+  APPLE
+}
+
+model Tweet {
+  id            String     @id @default(cuid())
+  User          User       @relation(fields: [userId], references: [id])
+  userId        String     @map("user_id")
+  content       String
+  mediaUrl      String?    @map("media_url")
+  parentTweetId String?    @map("parent_tweet_id")
+  parentTweet   Tweet?     @relation("ParentTweets", fields: [parentTweetId], references: [id])
+  childTweets   Tweet[]    @relation("ParentTweets")
+  tweetType     TweetType  @default(DEFAULT) @map("tweet_type")
+  createdAt     DateTime   @default(now())
+  likes         Likes[]
+  hashtags      Hashtags[]
+}
+
+enum TweetType {
+  DEFAULT
+  REPLY
+  RETWEET
+  QUOTE
+}
+
+model Likes {
+  userId  String   @map("user_id")
+  user    User     @relation(fields: [userId], references: [id])
+  tweetId String   @map("tweet_id")
+  tweet   Tweet    @relation(fields: [tweetId], references: [id])
+  likedAt DateTime @default(now()) @map("liked_at")
+
+  @@id([userId, tweetId])
+}
+
+model Hashtags {
+  id     Int     @id @default(autoincrement())
+  tag    String  @unique @db.VarChar(100)
+  tweets Tweet[]
+}
+
+model Messages {
+  id         Int      @id @default(autoincrement())
+  senderId   String
+  sender     User     @relation("MessagesSent", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User     @relation("MessagesReceived", fields: [receiverId], references: [id])
+  content    String
+  createdAt  DateTime @default(now())
+}
+
+model UserSettings {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+}
