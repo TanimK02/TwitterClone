@@ -11,25 +11,25 @@ export default function NavLinks() {
 
     return (
         <>
-            <Link href='/'>
-            <Image src={homePic} alt="Home Button" width={33} height={33}/>
-            <label>Home</label>
+            <Link href='/Home'>
+                <Image src={homePic} alt="Home Button" width={33} height={33} />
+                <label>Home</label>
             </Link>
             <Link href='/'>
-            <Image src={searchPic} alt="Explore Button" width={33} height={33}/>
-            <label>Explore</label>
+                <Image src={searchPic} alt="Explore Button" width={33} height={33} />
+                <label>Explore</label>
             </Link>
             <Link href='/'>
-            <Image src={messagePic} alt="Messages Button" width={33} height={33}/>
-            <label>Messages</label>
+                <Image src={messagePic} alt="Messages Button" width={33} height={33} />
+                <label>Messages</label>
             </Link>
             <Link href='/'>
-            <Image src={communityPic} alt="Communities Button" width={33} height={33}/>
-            <label>Communities</label>
+                <Image src={communityPic} alt="Communities Button" width={33} height={33} />
+                <label>Communities</label>
             </Link>
-            <Link href='/'>
-            <Image src={profilePic} alt="Profile Button" width={33} height={33} />
-            <label>Profile</label>
+            <Link href='/profile'>
+                <Image src={profilePic} alt="Profile Button" width={33} height={33} />
+                <label>Profile</label>
             </Link>
         </>
     )

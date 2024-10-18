@@ -16,11 +16,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-      <div className='alignment'>
-        <SideNav></SideNav>
-        {children}
-        </div>        
-        </body>
+        <div className='alignment'>
+          <SideNav></SideNav>
+          {children}
+        </div>
+      </body>
     </html>
   );
 }

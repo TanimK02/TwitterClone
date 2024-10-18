@@ -1,0 +1,6 @@
+.alignment {
+    display: grid;
+    grid-template-columns: 20% 50% 30%;
+    width: 100%;
+    height: 100%;
+}

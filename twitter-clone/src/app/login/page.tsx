@@ -42,7 +42,9 @@ export default async function Page(props: {
                             action={async () => {
                                 "use server"
                                 try {
-                                    await signIn(provider.id)
+                                    await signIn(provider.id, {
+                                        redirectTo: ''
+                                    })
                                 } catch (error) {
                                     if (error instanceof AuthError) {
                                         return redirect('/api/auth/callback/google')
