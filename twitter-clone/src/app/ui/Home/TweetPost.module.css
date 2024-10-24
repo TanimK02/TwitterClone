@@ -1,0 +1,76 @@
+.tweetPostContainer {
+    display: flex;
+    width: 100%;
+    height: 15%;
+    min-height: 15%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.183);
+}
+
+.profileContainer {
+    height: 100%;
+    flex-basis: 10%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 10px;
+}
+
+.tweetContainer {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 88%;
+    height: 100%;
+}
+
+.inputContainer {
+    width: 100%;
+    min-height: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.inputContainer textarea {
+    height: 60%;
+    width: 95%;
+    font-size: 1.2rem;
+    background-color: transparent;
+    border: none;
+    resize: none;
+
+}
+
+.inputContainer textarea:focus {
+    outline: none;
+}
+
+.xtrasSubmitContainer {
+    flex-basis: 88%;
+    max-height: 50%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+}
+
+.xtrasSubmitContainer input[type="submit"] {
+
+    width: 67px;
+    height: 36px;
+    background-color: #1DA1F2;
+    border: none;
+    font: inherit;
+    border-radius: 20px;
+
+}
+
+.buttonContainer {
+    display: flex;
+    justify-content: space-around;
+    width: 10%;
+}
+
+.buttonContainer img:nth-of-type(1) {
+    border-radius: 5px;
+}

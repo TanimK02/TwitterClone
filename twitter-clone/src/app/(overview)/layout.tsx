@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className='alignment'>
+        <div className='alignment' style={{ overflowY: "visible" }}>
           <SideNav></SideNav>
           {children}
         </div>

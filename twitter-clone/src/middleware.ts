@@ -13,6 +13,10 @@ export async function middleware(request: NextRequest) {
     }
 
     // Redirect to Home if logged in and on the root or signUp page
+    if (session && session.user && !session.user.username) {
+        return NextResponse.redirect(new URL('/Home', request.url));
+    }
+
     if (session && session.user && (pathname === '/' || pathname === '/signUp' || pathname == "/login")) {
         return NextResponse.redirect(new URL('/Home', request.url));
     }

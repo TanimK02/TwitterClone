@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import prisma from '@/app/lib/db';
 import bcrypt from 'bcryptjs';
+import { auth } from '@/auth';
 
 const UserSchema = z.object({
     id: z.string(),
@@ -25,6 +26,17 @@ export type CreateUserState = {
     };
     message?: string | null;
 };
+
+const UsernameSchema = z.object({
+    username: z.string().min(1, "It needs to be at least 1 character long.").max(30, "It has to be less than 30 characters long.")
+})
+
+export type CreateUsernameState = {
+    errors?: {
+        username?: string[];
+    };
+    message?: string | null;
+}
 
 export async function createUserEP(prevState: CreateUserState, formData: FormData) {
 
@@ -67,8 +79,84 @@ export async function createUserEP(prevState: CreateUserState, formData: FormDat
                 message: 'Email is already in use.',
             };
         }
-        return { message: `Database Error: falied to create user. ` }
+        return { message: 'Database Error: falied to create user' }
     }
 
 
+}
+
+export async function changeUserName(prevState: CreateUsernameState, formData: FormData) {
+
+    const session = await auth();
+    if (!session || !session.user) {
+        return {
+            message: 'Not logged in.',
+        };
+    }
+    const user = session.user;
+    const validatedFields = UsernameSchema.safeParse({
+        username: formData.get("username")
+    });
+
+    if (!validatedFields.success) {
+        console.log("here3");
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Missing Fields. Failed to create user.',
+        };
+    }
+
+    const { username } = validatedFields.data;
+
+    try {
+        await prisma.user.update({
+            where: {
+                id: user.id,
+            },
+            data: {
+                username: username as string,
+            },
+        });
+
+        console.log("here");
+        return {
+            message: 'Username accepted.',
+        };
+    }
+    catch (error: any) {
+        console.log("here2")
+        if (error.code === 'P2002' && error.meta?.target?.includes('username')) {
+            return {
+                message: 'Username is already in use.',
+            };
+        }
+        return { message: 'Database Error: falied to change username' }
+    }
+
+
+}
+
+export async function getUserByName(name: string) {
+    let user = null
+
+    user = await prisma.user.findUnique({
+        where: {
+            username: name as string
+        }
+    })
+
+    return user
+}
+
+export async function getUserPostAmount(username: string) {
+    const amount = await prisma.user.findUnique({
+        where: { username: username },
+        select: {
+            _count: {
+                select: { tweets: true }
+            }
+        }
+    });
+
+    return amount?._count.tweets;
 }

@@ -1,6 +1,4 @@
-.sideNav-div{
-
-    height: 100%;
+.sideNav-div {
     display: flex;
     flex-direction: column;
     background-color: black;
@@ -10,85 +8,86 @@
     grid-column: 1/2;
     font-weight: 500;
     position: sticky;
+    min-height: 600px;
+
 }
 
-.nav-list{
+.nav-list {
     margin-top: 15px;
     display: flex;
     flex-direction: column;
     height: 60%;
     padding-left: 15%;
     padding-right: 20px;
+
 }
 
-.logo h1{
+.logo h1 {
     margin-bottom: -20px;
 
 }
 
-.nav-list a, .nav-list button{
+.nav-list a,
+.nav-list button {
     flex-grow: 1;
     text-decoration: none;
     color: white;
     overflow-x: hidden;
 }
 
-.nav-list a{
+.nav-list a {
     display: flex;
     align-items: center;
     gap: 1em;
-    
+
 }
 
-.nav-list a label{
-    font-size: 30px;
+.nav-list a label {
+    font-size: 1.5rem;
 }
 
-.nav-list a h1{
-    font-size: 33px;
-}
-.nav-list button{
+.nav-list button {
     background-color: #1DA1F2;
     border: none;
     border-radius: 40px;
     margin-left: -10%;
 }
 
-.nav-list button p{
-    font-size: 20px;
+.nav-list button p {
+    font-size: 1.2rem;
     font-weight: bold;
 }
 
-.nav-list button img{
+.nav-list button img {
     display: none;
 }
 
-.nav-list a img{
+.nav-list a img {
     filter: invert(100%);
 }
 
-.nav-list a:first-child img{
+.nav-list a:first-child img {
     filter: invert(0%);
 }
 
-.nav-list:visited{
+.nav-list:visited {
     color: white;
 }
 
-label:hover{
+label:hover {
     cursor: pointer;
 }
 
-button:hover{
+button:hover {
     cursor: pointer;
 }
 
-@media (max-width: 1300px){
-    .nav-list a label{
+@media (max-width: 1300px) {
+    .nav-list a label {
         display: none;
     }
 
-    .nav-list button{
+    .nav-list button {
         background-color: #1DA1F2;
         border: none;
         border-radius: 50%;
@@ -98,24 +97,24 @@ button:hover{
         margin-left: 0%;
     }
 
-    .nav-list{
+    .nav-list {
         align-items: center;
     }
 
-    .nav-list button{
+    .nav-list button {
         vertical-align: middle;
         height: 60px;
         width: 60px;
-        
+
     }
 
-    .nav-list button p{
+    .nav-list button p {
         display: none;
     }
 
-    .nav-list button img{
+    .nav-list button img {
         display: inline-block;
         filter: invert(100%);
     }
-    
+
 }

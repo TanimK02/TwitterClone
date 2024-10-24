@@ -33,9 +33,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/ui/Home/NavLinks.jsx",
+    "src/app/ui/Home/NavLinks.tsx",
     "src/app/ui/Home/NavTop.jsx",
-    "src/app/signUp/page.jsx"
+    "src/app/signUp/page.jsx",
+    "src/app/lib/db.js"
   ],
   "exclude": [
     "node_modules"

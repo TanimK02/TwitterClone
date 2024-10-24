@@ -1,49 +1,82 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
   id               String        @id @default(cuid())
-  username         String?       @unique @db.VarChar(50)
-  email            String        @unique @db.VarChar(100)
-  name             String        @db.VarChar(100)
-  oAuthProvider    OAuthType?
-  oAuthId          String?
-  password_hash    String?
-  display_name     String?       @db.VarChar(100)
-  bio              String?
-  profileImageUrl  String?       @map("profile_image_url")
-  coverImageUrl    String?       @map("cover_image_url")
-  createdAt        DateTime      @default(now()) @map("created_at")
-  updatedAt        DateTime?     @updatedAt @map("updated_at")
-  tweets           Tweet[]
-  followedBy       User[]        @relation("UserFollows")
-  following        User[]        @relation("UserFollows")
-  likes            Likes[]
-  messagesSent     Messages[]    @relation("MessagesSent")
-  messagesReceived Messages[]    @relation("MessagesReceived")
-  settings         UserSettings?
+  name             String? // From documentation
+  email            String?       @unique // From documentation
+  emailVerified    DateTime?     @map("email_verified") // From documentation
+  image            String? // From documentation
+  username         String?       @unique @db.VarChar(50) // Retained from your schema
+  password_hash    String? // Used for credential-based login (optional), retained from your schema
+  display_name     String?       @db.VarChar(100) // Retained from your schema
+  bio              String? // Retained from your schema
+  coverImageUrl    String?       @map("cover_image_url") // Retained from your schema
+  createdAt        DateTime      @default(now()) @map("created_at") // Retained from your schema
+  updatedAt        DateTime?     @updatedAt @map("updated_at") // Retained from your schema
+  accounts         Account[] // Linking accounts (OAuth, etc.)
+  sessions         Session[] // Linking sessions (for session-based auth)
+  tweets           Tweet[] // Retained from your schema
+  followedBy       User[]        @relation("UserFollows") // Retained from your schema
+  following        User[]        @relation("UserFollows") // Retained from your schema
+  likes            Likes[] // Retained from your schema
+  messagesSent     Messages[]    @relation("MessagesSent") // Retained from your schema
+  messagesReceived Messages[]    @relation("MessagesReceived") // Retained from your schema
+  settings         UserSettings? // Retained from your schema
+
+  @@map("users")
 }
 
-enum OAuthType {
-  GOOGLE
-  APPLE
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id") // From documentation
+  type              String // From documentation
+  provider          String // OAuth provider (e.g., google, github), from documentation
+  providerAccountId String  @map("provider_account_id") // From documentation
+  refresh_token     String? @db.Text // From documentation
+  access_token      String? @db.Text // From documentation
+  expires_at        Int? // From documentation
+  token_type        String? // From documentation
+  scope             String? // From documentation
+  id_token          String? @db.Text // From documentation
+  session_state     String? // From documentation
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token") // From documentation
+  userId       String   @map("user_id") // From documentation
+  expires      DateTime // From documentation
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String // From documentation
+  token      String // From documentation
+  expires    DateTime // From documentation
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
 model Tweet {
   id            String     @id @default(cuid())
-  User          User       @relation(fields: [userId], references: [id])
+  user          User       @relation(fields: [userId], references: [id])
   userId        String     @map("user_id")
   content       String
   mediaUrl      String?    @map("media_url")

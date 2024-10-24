@@ -5,6 +5,9 @@ import bcrypt from 'bcryptjs';
 import prisma from "@/app/lib/db";
 import { z } from 'zod';
 import type { Provider } from "next-auth/providers"
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import { encode as defaultEncode } from "next-auth/jwt";
+import { v4 as uuid } from "uuid";
 
 const UserSchema = z.object({
     id: z.string(),
@@ -69,12 +72,49 @@ export const providerMap = providers
     })
     .filter((provider) => provider.id !== "credentials")
 
+const adapter = PrismaAdapter(prisma);
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+    adapter: adapter,
     providers: providers,
     pages: {
         signIn: "/login"
+    },
+    callbacks: {
+        async jwt({ token, user, account }) {
+            if (account?.provider === "credentials") {
+                token.credentials = true
+            }
+            return token
+        },
+        authorized: async ({ auth }) => {
+            // Logged in users are authenticated, otherwise redirect to login page
+            return !!auth
+        },
+    },
+    jwt: {
+        encode: async function (params) {
+            if (params.token?.credentials) {
+                const sessionToken = uuid()
+
+                if (!params.token.sub) {
+                    throw new Error("No user ID found in token")
+                }
+
+                const createdSession = await adapter?.createSession?.({
+                    sessionToken: sessionToken,
+                    userId: params.token.sub,
+                    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+                })
+
+                if (!createdSession) {
+                    throw new Error("Failed to create session")
+                }
+
+                return sessionToken
+            }
+            return defaultEncode(params)
+        }
     }
 }
 )
-
-

@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    experimental: {
+        serverComponentsExternalPackages: ['@prisma/client', 'bcryptjs']
+    },
+
     webpack(config, { dev, isServer }) {
         if (dev && !isServer) {
             config.devtool = 'cheap-module-source-map';

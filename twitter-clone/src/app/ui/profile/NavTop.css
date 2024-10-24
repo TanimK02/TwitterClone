@@ -1,42 +1,31 @@
-.topNav-div{
+.profileNav-div {
     top: 0;
     position: sticky;
     width: 100%;
     display: flex;
-    justify-content: space-evenly;
+    justify-content: flex-start;
+    align-items: center;
     height: 8%;
     border-bottom: 1px solid rgba(255, 255, 255, 0.183);
+    gap: 5%
 }
 
-.tabs{
-    width: 100%;
+.profileNav-div a {
+    margin-left: 20px;
+}
+
+.user-info {
     display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
-.for-you, .following{
-    position: relative;
-    width: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-div a span{
-    color: white;
-    font-size: 20px;
+.display-name {
+    font-size: 1.2rem;
     font-weight: bold;
 }
 
-a {
-    text-decoration: none;
-
-  }
-
-.blue-line{
-    position:absolute;
-    bottom: 0;
-    background-color: #1DA1F2;
-    height: 6px;
-    border-radius: 8px;
-    
+.post-number {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.355);
 }
