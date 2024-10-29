@@ -1,7 +1,6 @@
 .tweetPostContainer {
     display: flex;
     width: 100%;
-    height: 15%;
     min-height: 15%;
     border-bottom: 1px solid rgba(255, 255, 255, 0.183);
 }
@@ -73,4 +72,33 @@
 
 .buttonContainer img:nth-of-type(1) {
     border-radius: 5px;
+}
+
+.imageContainer {
+    display: flex;
+    gap: 10px;
+}
+
+.imageContainer2 {
+    position: relative;
+}
+
+.imageContainer2 button[type="button"] {
+    border: none;
+    font: inherit;
+    font-size: 0.5rem;
+    border-radius: 50%;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.imageContainer2 img,
+.imageContainer2 video {
+    object-fit: cover;
+}
+
+
+.imageContainer2 button img {
+    filter: invert(100%);
 }

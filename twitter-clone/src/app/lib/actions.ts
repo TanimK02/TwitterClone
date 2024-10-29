@@ -148,6 +148,18 @@ export async function getUserByName(name: string) {
     return user
 }
 
+export async function getUserById(id: string) {
+    let user = null
+
+    user = await prisma.user.findUnique({
+        where: {
+            id: id
+        }
+    })
+
+    return user
+}
+
 export async function getUserPostAmount(username: string) {
     const amount = await prisma.user.findUnique({
         where: { username: username },

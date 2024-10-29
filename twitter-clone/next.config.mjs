@@ -16,7 +16,7 @@ const nextConfig = {
                 fs: false,
             };
         }
-
+        config.cache = false;
         return config;
     },
     reactStrictMode: false, // You've mentioned turning this off.

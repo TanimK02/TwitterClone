@@ -31,6 +31,7 @@ model User {
   messagesSent     Messages[]    @relation("MessagesSent") // Retained from your schema
   messagesReceived Messages[]    @relation("MessagesReceived") // Retained from your schema
   settings         UserSettings? // Retained from your schema
+  media            Media[] // Reverse association to all media files uploaded by this user
 
   @@map("users")
 }
@@ -79,7 +80,7 @@ model Tweet {
   user          User       @relation(fields: [userId], references: [id])
   userId        String     @map("user_id")
   content       String
-  mediaUrl      String?    @map("media_url")
+  media         Media[] // Reverse association to all media files attached to this tweet
   parentTweetId String?    @map("parent_tweet_id")
   parentTweet   Tweet?     @relation("ParentTweets", fields: [parentTweetId], references: [id])
   childTweets   Tweet[]    @relation("ParentTweets")
@@ -126,4 +127,18 @@ model UserSettings {
   id     String @id @default(cuid())
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  url       String // S3 URL
+  userId    String? // Can be associated with a user, e.g., profile picture
+  tweetId   String? // Can be associated with a tweet
+  type      String // "image", "video", "gif", etc.
+  createdAt DateTime @default(now())
+
+  user  User?  @relation(fields: [userId], references: [id]) // Optional association with a user
+  tweet Tweet? @relation(fields: [tweetId], references: [id]) // Optional association with a tweet
+
+  @@map("media")
 }
