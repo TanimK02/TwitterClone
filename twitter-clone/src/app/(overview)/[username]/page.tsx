@@ -13,7 +13,7 @@ export default async function Home({ params }: { params: { username: string } })
     }
     return (<>
         <div className="profile">
-            <NavTop username={params.username} postAmount={postAmount}></NavTop>
+            <NavTop username={params.username} postAmount={postAmount as number}></NavTop>
         </div>
         <SearchFollow></SearchFollow>
     </>

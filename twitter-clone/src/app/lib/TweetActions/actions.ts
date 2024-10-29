@@ -1,12 +1,13 @@
 "use server"
 
 import { auth } from "@/auth"
-
+import { InferSelectModel } from "drizzle-orm"
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import prisma from "@/app/lib/db"
+import { media, tweet } from "@/db/schema"
+import { db } from "@/index"
+import { eq } from "drizzle-orm"
 import crypto from "crypto";
-import { Prisma } from '@prisma/client';
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 const generateFileName = (bytes = 32) => crypto.randomBytes(bytes).toString("hex");
@@ -59,21 +60,18 @@ export async function getSignedURL(type: string, size: number, checksum: string)
     })
 
 
-    const mediaResult = await prisma.media.create({
-        data: {
-            url: signedURL.split("?")[0],
-            userId: session.user.id,
-            type: type
-        },
-        select: {
-            id: true
-        }
-    }
-    )
+    const result = await db.insert(media).values({
+        url: signedURL.split("?")[0],
+        type: type,
+        userId: session.user.id,
+    }).returning()
+    const mediaResult = result[0]
 
     return { success: { url: signedURL, mediaId: mediaResult.id } }
 }
 
+type MediaRes = InferSelectModel<typeof media>
+type Tweet = InferSelectModel<typeof tweet>
 export async function createTweet({ content, mediaIds }: { content: string, mediaIds?: string[] }) {
 
     const session = await auth();
@@ -81,55 +79,56 @@ export async function createTweet({ content, mediaIds }: { content: string, medi
         return { failure: "No user." }
     }
 
-    let tweet = null;
+    let post: Tweet | null = null;
 
     try {
         if (mediaIds && mediaIds.length > 0) {
-            const foundMedia = await prisma.media.findMany({
-                where: {
-                    id: { in: mediaIds },
-                    userId: session.user.id
-                }
+            let foundMedia: MediaRes[] = [];
+            const promises = mediaIds.map(async (id) => {
+                const result = await db.select().from(media).where(eq(media.id, id));
+                return result[0];  // Return the first result or undefined if not found
             });
+
+            const results = await Promise.all(promises);
+
+            foundMedia = results.filter((item): item is MediaRes => item !== undefined);
 
             if (foundMedia.length !== mediaIds.length) {
                 return { failure: "Some media entries are missing or do not belong to the user." };
             }
 
-            tweet = await prisma.tweet.create({
-                data: {
-                    userId: session.user.id as string,
-                    content: content,
-                    media: {
-                        connect: mediaIds.map(mediaid => ({ id: mediaid }))
+            const result = await db.insert(tweet).values({
+                userId: session.user.id as string,
+                content: content,
 
-                    }
-                }
-            })
+            }).returning();
+            post = result[0]
+            if (post) {
+                const promises = foundMedia.map(async (check) => {
+                    await db.update(media).set({ tweetId: post!.id }).where(eq(media.id, check.id));
+                });
+                await Promise.all(promises); // Ensure all updates complete
+            } else {
+                return { failure: "Some media entries failed to attach to tweet" }; // Handle potential error
+            }
+
         }
         else {
-            tweet = await prisma.tweet.create({
-                data: {
-                    userId: session.user.id as string,
-                    content: content,
-                }
-            })
+            const result = await db.insert(tweet).values({
+                userId: session.user.id as string,
+                content: content,
+
+            }).returning();
+            post = result[0]
         }
 
     }
     catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-            // Known Prisma error, e.g., unique constraint violation
-            console.error("Prisma error code:", error.code);
-        } else {
-            // Other unexpected errors
-            console.error("Unexpected error:", error);
-        }
         return { failure: "An error occurred while creating the tweet." };
     }
     finally {
-        if (tweet) {
-            console.log(tweet)
+        if (post) {
+            console.log(post)
             revalidatePath("/Home")
             redirect("/Home")
         }

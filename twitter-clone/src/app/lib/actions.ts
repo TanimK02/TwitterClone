@@ -1,10 +1,12 @@
 'use server'
 
 import { z } from 'zod';
-import prisma from '@/app/lib/db';
 import bcrypt from 'bcryptjs';
 import { auth } from '@/auth';
-
+import { users, tweet } from '@/db/schema';
+import { db } from '@/index';
+import { eq, sql } from 'drizzle-orm';
+import { revalidatePath } from 'next/cache';
 const UserSchema = z.object({
     id: z.string(),
     email: z.string().email("Please enter a valid email."),
@@ -59,26 +61,18 @@ export async function createUserEP(prevState: CreateUserState, formData: FormDat
     const hashedPassword = await bcrypt.hash(password, 10);
 
     try {
-        await prisma.user.create({
-            data: {
-                email: email as string,
-                name: name as string,
-                password_hash: hashedPassword as string
-            }
-        }
-        )
+
+        await db.insert(users).values({
+            email: email as string,
+            name: name as string,
+            passwordHash: hashedPassword as string
+        })
         console.log("here");
         return {
             message: 'User created successfully.',
         };
     }
     catch (error: any) {
-        console.log("here2")
-        if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
-            return {
-                message: 'Email is already in use.',
-            };
-        }
         return { message: 'Database Error: falied to create user' }
     }
 
@@ -109,27 +103,20 @@ export async function changeUserName(prevState: CreateUsernameState, formData: F
     const { username } = validatedFields.data;
 
     try {
-        await prisma.user.update({
-            where: {
-                id: user.id,
-            },
-            data: {
-                username: username as string,
-            },
-        });
-
+        if (user.id) {
+            await db.update(users).set({ username: username as string }).where(eq(users.id, user.id));
+        }
+        else {
+            throw new Error("User ID is undefined.");
+        }
         console.log("here");
+        revalidatePath("/Home")
         return {
             message: 'Username accepted.',
         };
     }
     catch (error: any) {
         console.log("here2")
-        if (error.code === 'P2002' && error.meta?.target?.includes('username')) {
-            return {
-                message: 'Username is already in use.',
-            };
-        }
         return { message: 'Database Error: falied to change username' }
     }
 
@@ -139,36 +126,25 @@ export async function changeUserName(prevState: CreateUsernameState, formData: F
 export async function getUserByName(name: string) {
     let user = null
 
-    user = await prisma.user.findUnique({
-        where: {
-            username: name as string
-        }
-    })
+    user = await db.select().from(users).where(eq(users.username, name));
 
-    return user
+    return user[0]
 }
 
 export async function getUserById(id: string) {
     let user = null
 
-    user = await prisma.user.findUnique({
-        where: {
-            id: id
-        }
-    })
+    user = await db.select().from(users).where(eq(users.id, id));
 
-    return user
+    return user[0]
 }
 
 export async function getUserPostAmount(username: string) {
-    const amount = await prisma.user.findUnique({
-        where: { username: username },
-        select: {
-            _count: {
-                select: { tweets: true }
-            }
-        }
-    });
+    const tweetCount = await db
+        .select({ count: sql`COUNT(*)` })
+        .from(tweet)
+        .innerJoin(users, eq(users.id, tweet.userId))
+        .where(eq(users.username, username));
 
-    return amount?._count.tweets;
+    return tweetCount[0].count;
 }
