@@ -1,7 +1,7 @@
 "use server"
 
 import { auth } from "@/auth"
-import { InferSelectModel } from "drizzle-orm"
+import { inArray, InferSelectModel } from "drizzle-orm"
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { media, tweet } from "@/db/schema"
@@ -84,15 +84,7 @@ export async function createTweet({ content, mediaIds }: { content: string, medi
     try {
         if (mediaIds && mediaIds.length > 0) {
             let foundMedia: MediaRes[] = [];
-            const promises = mediaIds.map(async (id) => {
-                const result = await db.select().from(media).where(eq(media.id, id));
-                return result[0];  // Return the first result or undefined if not found
-            });
-
-            const results = await Promise.all(promises);
-
-            foundMedia = results.filter((item): item is MediaRes => item !== undefined);
-
+            foundMedia = await db.select().from(media).where(inArray(media.id, mediaIds))
             if (foundMedia.length !== mediaIds.length) {
                 return { failure: "Some media entries are missing or do not belong to the user." };
             }
@@ -104,10 +96,7 @@ export async function createTweet({ content, mediaIds }: { content: string, medi
             }).returning();
             post = result[0]
             if (post) {
-                const promises = foundMedia.map(async (check) => {
-                    await db.update(media).set({ tweetId: post!.id }).where(eq(media.id, check.id));
-                });
-                await Promise.all(promises); // Ensure all updates complete
+                await db.update(media).set({ tweetId: post!.id }).where(inArray(media.id, mediaIds));
             } else {
                 return { failure: "Some media entries failed to attach to tweet" }; // Handle potential error
             }
