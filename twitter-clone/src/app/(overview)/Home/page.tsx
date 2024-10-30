@@ -15,6 +15,7 @@ export default async function Home() {
     const user = await getUserById(userId);
     if (user && typeof user !== "undefined") {
       username = user?.username || "";
+      console.log(username)
     }
   }
 
@@ -24,7 +25,7 @@ export default async function Home() {
       <TweetPost></TweetPost>
     </div>
     <SearchFollow></SearchFollow>
-    {username == "" && <UserName></UserName>}
+    {!username && <UserName></UserName>}
   </>
   );
 }

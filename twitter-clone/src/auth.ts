@@ -2,12 +2,14 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import bcrypt from 'bcryptjs';
-import prisma from "@/app/lib/db";
+import { accounts, sessions, users, verificationTokens } from "@/db/schema"
+import { db } from "@/index";
 import { z } from 'zod';
 import type { Provider } from "next-auth/providers"
-import { PrismaAdapter } from "@auth/prisma-adapter"
+import { DrizzleAdapter } from "@auth/drizzle-adapter"
 import { encode as defaultEncode } from "next-auth/jwt";
 import { v4 as uuid } from "uuid";
+import { eq } from "drizzle-orm";
 
 const UserSchema = z.object({
     id: z.string(),
@@ -39,17 +41,13 @@ const providers: Provider[] = [Google,
 
             let user = null
 
-            user = await prisma.user.findUnique({
-                where: {
-                    email: credentials.email as string
-                }
-            })
-
+            const result = await db.select().from(users).where(eq(users.email, credentials.email as string))
+            user = result[0]
             if (!user) {
                 throw new Error("User not found.")
             }
 
-            const match = await bcrypt.compare(credentials.password as string, user.password_hash as string);
+            const match = await bcrypt.compare(credentials.password as string, user.passwordHash as string);
 
             if (!match) {
                 throw new Error("Incorrect password.")
@@ -72,7 +70,12 @@ export const providerMap = providers
     })
     .filter((provider) => provider.id !== "credentials")
 
-const adapter = PrismaAdapter(prisma);
+const adapter = DrizzleAdapter(db, {
+    usersTable: users,
+    accountsTable: accounts,
+    sessionsTable: sessions,
+    verificationTokensTable: verificationTokens,
+});
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     adapter: adapter,
