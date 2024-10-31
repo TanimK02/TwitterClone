@@ -3,7 +3,7 @@ import "@/app/ui/profile/NavTop.css"
 import GoBack from "@/app/ui/profile/goBack"
 
 export default async function TopNav({ username = "", postAmount }: { username?: string, postAmount?: Number | null }) {
-
+    username = decodeURIComponent(username)
     return (
         <>
             <nav className='profileNav-div'>

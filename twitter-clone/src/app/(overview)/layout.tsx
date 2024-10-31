@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import SideNav from '@/app/ui/Home/SideNav';
+import SearchFollow from '@/app/ui/Home/SearchFollow';
 
 export const metadata = {
   title: 'Twitter/X clone',
@@ -19,6 +20,7 @@ export default function RootLayout({
         <div className='alignment' style={{ overflowY: "visible" }}>
           <SideNav></SideNav>
           {children}
+          <SearchFollow></SearchFollow>
         </div>
       </body>
     </html>

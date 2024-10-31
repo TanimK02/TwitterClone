@@ -1,12 +1,10 @@
 
 import "@/app/(overview)/Home/home.css"
 import TopNav from '@/app/ui/Home/NavTop';
-import SearchFollow from '@/app/ui/Home/SearchFollow';
 import { auth } from "@/auth";
 import UserName from "@/app/ui/Home/UserName";
-import TweetPost from "@/app/ui/Home/TweetPost";
 import { getUserById } from "@/app/lib/actions";
-
+import Feed from "@/app/ui/Feed/Feed";
 export default async function Home() {
   const session = await auth();
   const userId = session?.user?.id;
@@ -15,16 +13,14 @@ export default async function Home() {
     const user = await getUserById(userId);
     if (user && typeof user !== "undefined") {
       username = user?.username || "";
-      console.log(username)
     }
   }
 
   return (<>
     <div className="home">
       <TopNav></TopNav>
-      <TweetPost></TweetPost>
+      <Feed></Feed>
     </div>
-    <SearchFollow></SearchFollow>
     {!username && <UserName></UserName>}
   </>
   );
