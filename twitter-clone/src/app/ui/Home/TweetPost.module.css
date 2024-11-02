@@ -15,6 +15,10 @@
     padding-top: 10px;
 }
 
+.profileContainer img {
+    border-radius: 9999px;
+}
+
 .tweetContainer {
     display: flex;
     flex-direction: column;

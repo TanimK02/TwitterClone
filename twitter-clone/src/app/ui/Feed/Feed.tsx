@@ -10,7 +10,7 @@ export default function Feed() {
         <>
             <TweetPost></TweetPost>
             <div className={styles.FeedContainer}>
-                <TweetItem name="Bob" username="Bob" time="2024-10-30T12:34:56.123Z" content="Hello There everyone" mediaUrls={[""]} ></TweetItem>
+                <TweetItem profileUrl="" name="Bob" username="HelloThere" time="2024-10-30T12:34:56.123Z" content="Hello There everyone" mediaUrls={[""]} ></TweetItem>
             </div>
         </>
     )

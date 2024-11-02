@@ -2,6 +2,7 @@
 
 import styles from '@/app/ui/Home/TweetPost.module.css'
 import profile from '@/public/profile.svg'
+import majin from "@/public/majin-buu.jpg"
 import Image from 'next/image'
 import gif from '@/public/gif.svg'
 import imagePic from '@/public/image.svg'
@@ -123,7 +124,7 @@ export default function TweetPost() {
         <>
             <div className={styles.tweetPostContainer}>
                 <div className={styles.profileContainer}>
-                    <Image src={profile} height={30} width={30} alt='Profile picture in tweet box' style={{ filter: "invert(100%)", aspectRatio: "40 : 40" }}></Image>
+                    <Image src={majin} height={40} width={40} alt='Profile picture in tweet box' style={{ aspectRatio: "40 : 40" }}></Image>
                 </div>
                 <form className={styles.tweetContainer} onSubmit={handleSubmit}>
                     <div className={styles.inputContainer}>
