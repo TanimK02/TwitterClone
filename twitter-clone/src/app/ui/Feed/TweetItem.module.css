@@ -93,3 +93,17 @@
     justify-content: flex-end;
     gap: 5px;
 }
+
+.MediaContainer {
+    width: 100%;
+    height: fit-content;
+}
+
+.Thumbnail {
+    width: fit-content;
+}
+
+.Thumbnail img {
+    width: fit-content;
+    height: fit-content;
+}

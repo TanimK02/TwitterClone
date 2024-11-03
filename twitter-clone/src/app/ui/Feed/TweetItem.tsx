@@ -9,6 +9,7 @@ import heart from "@/public/heart.svg"
 import stats from "@/public/statsPic.svg"
 import bookmark from "@/public/bookmark.svg"
 import upload from "@/public/upload.svg"
+import Media from "@/app/ui/Feed/Media"
 
 export default function TweetItem({ name = "Billy", username = "Bob James", time = "2024-10-30T12:34:56.123Z", content = "Hello new tweet", mediaUrls = [""], profileUrl = "" }:
     { name: string, username: string, time: string, content: string, mediaUrls: string[], profileUrl: string }
@@ -64,8 +65,7 @@ export default function TweetItem({ name = "Billy", username = "Bob James", time
                     <div className={styles.ContentText}>
                         {content}
                     </div>
-                    <div className={styles.MediaContainer}>
-                    </div>
+                    <Media></Media>
                     <div className={styles.FooterContainer}>
                         <div className={styles.CRHS}>
                             <div className={styles.ImageContainer}>

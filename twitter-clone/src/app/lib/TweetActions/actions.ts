@@ -1,10 +1,10 @@
 "use server"
 
 import { auth } from "@/auth"
-import { inArray, InferSelectModel } from "drizzle-orm"
+import { desc, getTableColumns, inArray, InferSelectModel, lt } from "drizzle-orm"
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { media, tweet } from "@/db/schema"
+import { media, tweet, users } from "@/db/schema"
 import { db } from "@/index"
 import { eq } from "drizzle-orm"
 import crypto from "crypto";
@@ -124,4 +124,20 @@ export async function createTweet({ content, mediaIds }: { content: string, medi
     }
 
 
+}
+
+export async function pullTweets(timestamp: string) {
+
+    const { coverImageUrl } = getTableColumns(users);
+
+    const results = await db.select({ ...getTableColumns(tweet), coverImageUrl }).from(tweet).innerJoin(users, eq(tweet.userId, users.id)).where(lt(tweet.createdAt, timestamp)).orderBy(desc(tweet.createdAt)).limit(20);
+
+    return results
+}
+
+export async function pullMedia(tweetId: number) {
+
+    const results = await db.select().from(media).where(eq(media.tweetId, tweet.id));
+
+    return results
 }
