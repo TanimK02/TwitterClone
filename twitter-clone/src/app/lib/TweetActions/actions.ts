@@ -6,7 +6,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { media, tweet, users } from "@/db/schema"
 import { db } from "@/index"
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import crypto from "crypto";
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
@@ -127,17 +127,32 @@ export async function createTweet({ content, mediaIds }: { content: string, medi
 }
 
 export async function pullTweets(timestamp: string) {
-
-    const { coverImageUrl } = getTableColumns(users);
-
-    const results = await db.select({ ...getTableColumns(tweet), coverImageUrl }).from(tweet).innerJoin(users, eq(tweet.userId, users.id)).where(lt(tweet.createdAt, timestamp)).orderBy(desc(tweet.createdAt)).limit(20);
+    const results = await db.execute(sql`
+        SELECT "Tweet".id, 
+               "Tweet".content, 
+               "Tweet".parent_tweet_id, 
+               "Tweet".tweet_type, 
+               "Tweet"."createdAt", 
+           STRING_AGG(CONCAT(media.id, ':', media.url, ':', media.type), ',') AS media_info,
+               users.name, 
+               users.cover_image_url, 
+               users.username
+        FROM "Tweet" 
+        INNER JOIN users ON "Tweet".user_id = users.id 
+        LEFT JOIN media ON media."tweetId" = "Tweet".id 
+        WHERE "Tweet"."createdAt" < ${timestamp}
+        GROUP BY "Tweet".id, 
+             "Tweet".content, 
+             "Tweet".parent_tweet_id, 
+             "Tweet".tweet_type, 
+             "Tweet"."createdAt", 
+             users.name, 
+             users.cover_image_url, 
+             users.username
+        ORDER BY "Tweet"."createdAt" DESC
+        LIMIT 20
+    `);
 
     return results
-}
 
-export async function pullMedia(tweetId: number) {
-
-    const results = await db.select().from(media).where(eq(media.tweetId, tweet.id));
-
-    return results
 }
