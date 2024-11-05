@@ -6,12 +6,13 @@ import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
 import Video from "yet-another-react-lightbox/plugins/video";
 
-type Media = {
-    url: string,
-    type: string
-}
+type MediaInfo = {
+    id: string;
+    url: string;
+    type: string;
+};
 
-export default function Media({ media }: { media?: Media[] }) {
+export default function Media({ media }: { media?: MediaInfo[] }) {
     if (!media) { return (<></>) }
     const [open, setOpen] = useState(false);
 

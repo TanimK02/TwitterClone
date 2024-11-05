@@ -24,6 +24,7 @@ export default function Feed() {
             return response.json(); // Parse the response JSON
         }).then(data => {
             updateTweets([...tweets, ...data.results]);
+
             // Do something with data.results if your response format is { results: [...] }
         })
             .catch(error => {
@@ -31,15 +32,32 @@ export default function Feed() {
             });
     }
 
+    function parseMediaInfo(mediaInfo: string) {
+        // Split the mediaInfo string by comma to separate each media entry
+        const mediaItems = mediaInfo.split(',');
+
+        // Map each media entry into an object with id, url, and type keys
+        const mediaList = mediaItems.map(item => {
+            const [id, url, type] = item.split('|');
+            return {
+                id: id,
+                url: url,
+                type: type
+            };
+        });
+
+        return mediaList;
+    }
+
     useEffect(() => {
         loadInTweets();
-        console.log(tweets)
+
     }, [])
     return (
         <>
             <TweetPost></TweetPost>
             <div className={styles.FeedContainer}>
-                <TweetItem profileUrl="" name="Bob" username="HelloThere" time="2024-10-30T12:34:56.123Z" content="Hello There everyone" mediaUrls={[""]} ></TweetItem>
+                {tweets.map((tweet, index) => <TweetItem key={index} profileUrl={tweet.cover_image_url || ""} name={tweet.name} username={tweet.username} time={tweet.createdAt} content={tweet.content} mediaUrls={tweet.media_info ? parseMediaInfo(tweet.media_info) : []} ></TweetItem>)}
             </div>
         </>
     )

@@ -142,3 +142,16 @@
 .name-link p {
   font-size: 0.8rem;
 }
+
+.scrollableDiv {
+  overflow-y: scroll;
+  max-height: 90vh;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+}
+
+.scrollableDiv::-webkit-scrollbar {
+  display: none;
+}

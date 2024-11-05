@@ -11,36 +11,56 @@ import bookmark from "@/public/bookmark.svg"
 import upload from "@/public/upload.svg"
 import Media from "@/app/ui/Feed/Media"
 
-export default function TweetItem({ name = "Billy", username = "Bob James", time = "2024-10-30T12:34:56.123Z", content = "Hello new tweet", mediaUrls = [""], profileUrl = "" }:
-    { name: string, username: string, time: string, content: string, mediaUrls: string[], profileUrl: string }
+
+type MediaInfo = {
+    id: string;
+    url: string;
+    type: string;
+};
+
+export default function TweetItem({ name = "Billy", username = "Bob James", time = "2024-10-30T12:34:56.123Z", content = "Hello new tweet", mediaUrls, profileUrl = "" }:
+    { name: string, username: string, time: string, content: string, mediaUrls?: MediaInfo[], profileUrl: string }
 ) {
 
     function timeAgo(dateString: string) {
         const now = new Date();
         const inputDate = new Date(dateString);
 
-        // Calculate the difference in milliseconds
-        const diffMs = now.getTime() - inputDate.getTime();
+        // Ensure the input date is valid
+        if (isNaN(inputDate.getTime())) {
+            return "Invalid date";
+        }
 
-        // Convert milliseconds to hours
-        const diffHours = diffMs / (1000 * 60 * 60);
+        // Calculate the timezone offset difference between the user's timezone and UTC
+        const localOffset = now.getTimezoneOffset() * 60 * 1000; // in milliseconds
+        const adjustedInputDate = new Date(inputDate.getTime() - localOffset);
 
-        if (diffHours < 24) {
-            const hoursAgo = Math.floor(diffHours);
-            return `${hoursAgo}h`;
+        // Calculate the difference in milliseconds between local 'now' and adjusted input date
+        const diffMs = now.getTime() - adjustedInputDate.getTime();
+
+        // Convert milliseconds to seconds, minutes, and hours
+        const diffSeconds = Math.floor(diffMs / 1000);
+        const diffMinutes = Math.floor(diffSeconds / 60);
+        const diffHours = Math.floor(diffMinutes / 60);
+
+        if (diffSeconds < 60) {
+            return `${diffSeconds}s`;
+        } else if (diffMinutes < 60) {
+            return `${diffMinutes}m`;
+        } else if (diffHours < 24) {
+            return `${diffHours}h`;
         } else {
-            // Determine if the input date's year is different from the current year
+            // Format the date for anything more than a day
             const options: Intl.DateTimeFormatOptions = {
                 month: 'short',
                 day: 'numeric',
             };
 
-            if (inputDate.getFullYear() !== now.getFullYear()) {
+            if (adjustedInputDate.getFullYear() !== now.getFullYear()) {
                 options.year = 'numeric';
             }
 
-            // Format the date accordingly
-            return new Intl.DateTimeFormat('en-US', options).format(inputDate);
+            return new Intl.DateTimeFormat('en-US', options).format(adjustedInputDate);
         }
     }
 
@@ -54,18 +74,20 @@ export default function TweetItem({ name = "Billy", username = "Bob James", time
                     <Image src={profileUrl || sasuke || profile} height={40} width={40} alt="profile picture from tweet"></Image>
                 </div>
                 <div className={styles.ContentContainer}>
-                    <div className={styles.ProfileInfo}>
-                        <div className={styles.ProfileNames}>
-                            <p className={styles.Name}>{name}</p><p className={styles.UserName}>@{username}</p><p className={styles.Point}>•</p><p className={styles.Time}>{time}</p>
+                    <div>
+                        <div className={styles.ProfileInfo}>
+                            <div className={styles.ProfileNames}>
+                                <p className={styles.Name}>{name}</p><p className={styles.UserName}>@{username}</p><p className={styles.Point}>•</p><p className={styles.Time}>{time}</p>
+                            </div>
+                            <div className={styles.Options}>
+                                <Image src={threeDots} height={19} width={19} alt="Tweet Options"></Image>
+                            </div>
                         </div>
-                        <div className={styles.Options}>
-                            <Image src={threeDots} height={19} width={19} alt="Tweet Options"></Image>
+                        <div className={styles.ContentText}>
+                            {content}
                         </div>
+                        {mediaUrls && <Media media={mediaUrls}></Media>}
                     </div>
-                    <div className={styles.ContentText}>
-                        {content}
-                    </div>
-                    <Media></Media>
                     <div className={styles.FooterContainer}>
                         <div className={styles.CRHS}>
                             <div className={styles.ImageContainer}>

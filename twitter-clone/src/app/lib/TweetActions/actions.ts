@@ -133,7 +133,7 @@ export async function pullTweets(timestamp: string) {
                "Tweet".parent_tweet_id, 
                "Tweet".tweet_type, 
                "Tweet"."createdAt", 
-           STRING_AGG(CONCAT(media.id, ':', media.url, ':', media.type), ',') AS media_info,
+STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
                users.name, 
                users.cover_image_url, 
                users.username
