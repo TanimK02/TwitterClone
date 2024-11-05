@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { auth } from '@/auth';
-import { users, tweet } from '@/db/schema';
+import { users, tweet, userFollows } from '@/db/schema';
 import { db } from '@/index';
 import { eq, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -147,4 +147,45 @@ export async function getUserPostAmount(username: string) {
         .where(eq(users.username, username));
 
     return tweetCount[0].count;
+}
+
+export async function pullUsers() {
+    const session = await auth();
+    if (!session || !session.user) {
+        return []
+    }
+    const results = await db.execute(sql`SELECT name, username, cover_image_url FROM users WHERE id != ${session.user.id} ORDER BY RANDOM() LIMIT 20;`)
+    return results.rows
+}
+
+export async function followUser(username: string) {
+    const session = await auth();
+    if (!session || !session.user) {
+        return false
+    }
+    const a = session.user.id;
+
+    const second_user = await getUserByName(username)
+    if (!second_user) {
+        return false
+    }
+    const b = second_user.id;
+
+    let result = null;
+    try {
+        result = await db.insert(userFollows).values({
+            a: a as string,
+            b: b as string,
+        }).returning();
+        console.log("Insert successful:", result);
+    } catch (error) {
+        console.error("Insert failed:", error);
+        return false
+    }
+    if (result == null) {
+        return false
+    } else {
+        return true
+    }
+
 }

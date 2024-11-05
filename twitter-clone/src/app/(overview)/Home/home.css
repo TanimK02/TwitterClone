@@ -6,13 +6,11 @@
 }
 
 .home {
-
-  grid-column: 2/3;
-
+  grid-column: 2 / 3;
 }
 
 .search-follow {
-  grid-column: 3/4;
+  grid-column: 3 / 4;
   height: 100%;
   border-left: 1px solid rgba(255, 255, 255, 0.183);
   display: flex;
@@ -58,10 +56,7 @@
 
 @media (max-width: 900px) {
   .alignment {
-    display: grid;
     grid-template-columns: 20% 70%;
-    width: 100%;
-    height: 100%;
   }
 
   .search-follow {
@@ -69,11 +64,8 @@
   }
 
   .home {
-
     border-right: 1px solid rgba(255, 255, 255, 0.183);
-
   }
-
 }
 
 .follow-container {
@@ -90,26 +82,22 @@
   font-size: 1.5rem;
 }
 
-
 .follow-list {
   max-height: 90%;
   display: flex;
   flex-direction: column;
-  overflow-y: scroll;
+  overflow-y: auto;
   gap: 15px;
-
 }
 
-.follow-list a {
-
+.follow-list .info {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  flex-shrink: 0;
-
+  align-items: center;
 }
 
-.follow-list a button {
+.follow-list .info button {
   background-color: white;
   color: black;
   min-width: 78px;
@@ -120,31 +108,46 @@
   font-weight: bold;
 }
 
-.follow-list a img {
+.follow-list .info img {
   filter: invert(100%);
 }
 
 .info {
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 10px;
+}
 
+.info a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* Space between the image and name */
+  text-decoration: none;
+  /* Remove underline for links */
+  color: inherit;
+  /* Inherit color from parent */
 }
 
 .name-link {
-  flex-basis: content;
+  display: flex;
+  flex-direction: column;
 }
 
 .name-link h4 {
   font-size: 1rem;
+  margin: 0;
 }
 
 .name-link p {
   font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
 }
 
+
 .scrollableDiv {
-  overflow-y: scroll;
+  overflow-y: auto;
   max-height: 90vh;
   scrollbar-width: none;
   /* Firefox */
@@ -154,4 +157,5 @@
 
 .scrollableDiv::-webkit-scrollbar {
   display: none;
+  /* Chrome, Safari */
 }

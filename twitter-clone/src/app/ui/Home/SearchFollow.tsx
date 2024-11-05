@@ -3,21 +3,31 @@ import searchPic from '@/public/search.svg'
 import Image from 'next/image'
 import Link from 'next/link'
 import profile from '@/public/profile.svg'
-export default function SearchFollow() {
+import { pullUsers } from '@/app/lib/actions'
+import FollowButton from './FollowButton'
+type returnUsers = {
+    cover_image_url: string | null,
+    username: string,
+    name: string
+}
 
+export default async function SearchFollow() {
+    const results: returnUsers[] = await pullUsers() as returnUsers[];
     const links = []
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < results.length; i++) {
         links.push(
-            <Link href="" key={i}>
-                <div className='info'>
-                    <Image src={profile} alt="profile image" height={30} width={30}></Image>
+
+            <div className='info' key={i}>
+                <Link href={`/${results[i].username}`} >
+                    <Image src={results[i].cover_image_url || profile} alt="profile image" height={30} width={30}></Image>
                     <div className='name-link'>
-                        <h4>Outdoor Channel</h4>
-                        <p>@OUTDChannel</p>
+                        <h4>{results[i].name}</h4>
+                        <p>@{results[i].username}</p>
                     </div>
-                </div>
-                <button>Follow</button>
-            </Link>)
+                </Link>
+                <FollowButton username={results[i].username}></FollowButton>
+            </div>
+        )
     }
     return (
         <div className="search-follow">
