@@ -138,7 +138,7 @@ export default function TweetPost() {
                                                 src={mediaData.previewUrl}
                                                 height={100}
                                                 width={100}
-                                                controls
+
                                             />
                                         ) : (
                                             <Image

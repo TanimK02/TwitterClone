@@ -8,10 +8,22 @@
 
 }
 
-.Thumbnail img,
-.Thumbnail video {
+.Thumbnail img {
     width: 100%;
     max-width: 555px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.183);
+}
+
+.ThumbnailDiv video {
+    width: 100%;
+    max-width: 555px;
+}
+
+.ThumbnailDiv {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.183);
 }

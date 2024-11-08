@@ -3,6 +3,7 @@ import TweetPost from "@/app/ui/Home/TweetPost"
 import { useEffect, useState } from "react"
 import styles from '@/app/ui/Feed/Feed.module.css'
 import TweetItem from "@/app/ui/Feed/TweetItem";
+import TopNav from "@/app/ui/Home/NavTop";
 type Tweet = {
     id: string;
     content: string;
@@ -55,6 +56,7 @@ export default function Feed() {
     }, [])
     return (
         <>
+            <TopNav></TopNav>
             <TweetPost></TweetPost>
             <div className={styles.FeedContainer}>
                 {tweets.map((tweet, index) => <TweetItem key={index} profileUrl={tweet.cover_image_url || ""} name={tweet.name} username={tweet.username} time={tweet.createdAt} content={tweet.content} mediaUrls={tweet.media_info ? parseMediaInfo(tweet.media_info) : []} ></TweetItem>)}

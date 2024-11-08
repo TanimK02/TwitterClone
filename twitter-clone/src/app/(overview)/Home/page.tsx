@@ -18,7 +18,6 @@ export default async function Home() {
 
   return (<>
     <div className="home">
-      <TopNav></TopNav>
       <div className="scrollableDiv">
         <Feed></Feed>
       </div>

@@ -148,7 +148,7 @@
 
 .scrollableDiv {
   overflow-y: auto;
-  max-height: 90vh;
+  max-height: 100vh;
   scrollbar-width: none;
   /* Firefox */
   -ms-overflow-style: none;

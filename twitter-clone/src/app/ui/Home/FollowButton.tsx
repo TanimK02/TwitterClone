@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from "react"
-
 export default function FollowButton({ username }: { username: string }) {
     const [following, setFollow] = useState(false);
     username = decodeURIComponent(username);
-    return (<button disabled={following} onClick={() => {
+    const [pending, setPending] = useState(false);
+    return (<button disabled={pending} onClick={() => {
+        setPending(true);
         fetch(`/api/userInteractions?username=${username}`).then(response => {
             if (!response.ok) {
                 throw new Error("Failed to follow")
@@ -14,8 +15,11 @@ export default function FollowButton({ username }: { username: string }) {
         }).then(data => {
             console.log(data.result)
             if (data.result == "Success") {
-                setFollow(true);
+                setFollow(!following);
             }
+        }
+        ).finally(() => {
+            setPending(false)
         }
         )
     }}>{following ? "Following" : "Follow"}</button>)

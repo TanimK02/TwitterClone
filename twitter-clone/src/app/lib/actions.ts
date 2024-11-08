@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import { auth } from '@/auth';
 import { users, tweet, userFollows } from '@/db/schema';
 import { db } from '@/index';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 const UserSchema = z.object({
     id: z.string(),
@@ -154,38 +154,40 @@ export async function pullUsers() {
     if (!session || !session.user) {
         return []
     }
-    const results = await db.execute(sql`SELECT name, username, cover_image_url FROM users WHERE id != ${session.user.id} ORDER BY RANDOM() LIMIT 20;`)
+    const followingRecords = await db.select({ b: userFollows.b }).from(userFollows).where(eq(userFollows.a, session.user.id as string));
+    const followingList = followingRecords.map(record => `'${record.b}'`).join(", ");
+    const results = await db.execute(sql`SELECT name, username, cover_image_url FROM users WHERE id != ${session.user.id} AND id IN (${followingList}) ORDER BY RANDOM() LIMIT 20;`);
     return results.rows
 }
 
 export async function followUser(username: string) {
     const session = await auth();
     if (!session || !session.user) {
-        return false
+        return false;
     }
     const a = session.user.id;
 
-    const second_user = await getUserByName(username)
+    const second_user = await getUserByName(username);
     if (!second_user) {
-        return false
+        return false;
     }
     const b = second_user.id;
 
-    let result = null;
     try {
-        result = await db.insert(userFollows).values({
-            a: a as string,
-            b: b as string,
-        }).returning();
-        console.log("Insert successful:", result);
-    } catch (error) {
-        console.error("Insert failed:", error);
-        return false
-    }
-    if (result == null) {
-        return false
-    } else {
-        return true
-    }
+        const followCheck = await db.select().from(userFollows).where(and(eq(userFollows.a, a as string), eq(userFollows.b, b as string)));
+        console.log("Check successful:", followCheck);
 
+        if (followCheck.length > 0) {
+            const deleteResult = await db.delete(userFollows).where(and(eq(userFollows.a, a as string), eq(userFollows.b, b as string)));
+            console.log("Delete successful:", deleteResult);
+            return true;
+        } else {
+            const insertResult = await db.insert(userFollows).values({ a: a as string, b: b as string }).returning();
+            console.log("Insert successful:", insertResult);
+            return true;
+        }
+    } catch (error) {
+        console.error("Operation failed:", error);
+        return false;
+    }
 }
