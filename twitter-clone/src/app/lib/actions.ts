@@ -155,8 +155,14 @@ export async function pullUsers() {
         return []
     }
     const followingRecords = await db.select({ b: userFollows.b }).from(userFollows).where(eq(userFollows.a, session.user.id as string));
-    const followingList = followingRecords.map(record => `'${record.b}'`).join(", ");
-    const results = await db.execute(sql`SELECT name, username, cover_image_url FROM users WHERE id != ${session.user.id} AND id IN (${followingList}) ORDER BY RANDOM() LIMIT 20;`);
+    const followingList = followingRecords.map(record => record.b);
+    const results = await db.execute(sql`SELECT name, username, cover_image_url FROM users WHERE id != ${session.user.id} AND id NOT IN (${sql.join(followingList, sql`, `)})  ORDER BY RANDOM() LIMIT 20;`);
+    const user = await db.select().from(users).where(eq(users.id, session.user.id as string));
+    let username: string | null = null;
+    if ('username' in user) {
+        username = user.username as string;
+        revalidatePath(`/${username}`)
+    }
     return results.rows
 }
 
@@ -190,4 +196,28 @@ export async function followUser(username: string) {
         console.error("Operation failed:", error);
         return false;
     }
+}
+
+export async function getUserProfile(username: string) {
+
+    let user = null
+
+    user = await db.execute(sql`
+        SELECT 
+            users.id, 
+            users.name, 
+            users.username, 
+            users.created_at,
+            users.cover_image_url, 
+            (SELECT COUNT(*) FROM "_UserFollows" WHERE "A" = users.id) AS following,
+            (SELECT COUNT(*) FROM "_UserFollows" WHERE "B" = users.id) AS followers
+        FROM 
+            users 
+        WHERE 
+            users.username = ${username}
+    `);
+
+
+    return user.rows;
+
 }

@@ -37,7 +37,7 @@ export default function NavLinks({ username = "/Home" }: { username?: string }) 
                 <label>Communities</label>
             </Link>
             <Link href={username} >
-                <Image src={profilePic} alt="Profile Button" width={23} height={24} />
+                <Image src={profilePic} alt="Profile Button" width={23} height={24} style={{ filter: "invert(0%)" }} />
                 <label>Profile</label>
             </Link>
         </>

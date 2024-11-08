@@ -15,10 +15,26 @@ type Tweet = {
     cover_image_url?: string;
     username: string;
 };
-export default function Feed() {
+export default function Feed({ username }: { username?: string }) {
     const [tweets, updateTweets] = useState<Tweet[]>([]);
     const loadInTweets = async () => {
         const data = fetch(`/api/pullTweets?timestamp=${new Date().toISOString()}`).then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch tweets');
+            }
+            return response.json(); // Parse the response JSON
+        }).then(data => {
+            updateTweets([...tweets, ...data.results]);
+
+            // Do something with data.results if your response format is { results: [...] }
+        })
+            .catch(error => {
+                console.error('Error loading tweets:', error);
+            });
+    }
+
+    const loadInProfileTweets = async (offset: number = 0) => {
+        const data = fetch(`/api/profile?username=${username}&offset=${offset}`).then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch tweets');
             }
@@ -51,13 +67,20 @@ export default function Feed() {
     }
 
     useEffect(() => {
-        loadInTweets();
+        if (!username) {
+            loadInTweets();
+        }
+        else {
+            loadInProfileTweets()
+        }
 
     }, [])
     return (
-        <>
-            <TopNav></TopNav>
-            <TweetPost></TweetPost>
+        <>{!username &&
+            <>
+                <TopNav></TopNav>
+                <TweetPost></TweetPost>
+            </>}
             <div className={styles.FeedContainer}>
                 {tweets.map((tweet, index) => <TweetItem key={index} profileUrl={tweet.cover_image_url || ""} name={tweet.name} username={tweet.username} time={tweet.createdAt} content={tweet.content} mediaUrls={tweet.media_info ? parseMediaInfo(tweet.media_info) : []} ></TweetItem>)}
             </div>
