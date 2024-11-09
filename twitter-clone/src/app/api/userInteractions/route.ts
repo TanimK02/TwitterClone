@@ -13,11 +13,8 @@ export async function GET(request: Request) {
     }
 
     try {
-        await followUser(username);
-        return NextResponse.json({
-            result: "Success"
-        })
-
+        const response = await followUser(username);
+        return response
     } catch (error) {
         return NextResponse.json({
             result: "Fail",

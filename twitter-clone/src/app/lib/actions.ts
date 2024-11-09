@@ -7,6 +7,7 @@ import { users, tweet, userFollows } from '@/db/schema';
 import { db } from '@/index';
 import { and, eq, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { NextResponse } from 'next/server';
 const UserSchema = z.object({
     id: z.string(),
     email: z.string().email("Please enter a valid email."),
@@ -156,7 +157,18 @@ export async function pullUsers() {
     }
     const followingRecords = await db.select({ b: userFollows.b }).from(userFollows).where(eq(userFollows.a, session.user.id as string));
     const followingList = followingRecords.map(record => record.b);
-    const results = await db.execute(sql`SELECT name, username, cover_image_url FROM users WHERE id != ${session.user.id} AND id NOT IN (${sql.join(followingList, sql`, `)})  ORDER BY RANDOM() LIMIT 20;`);
+    const followingListCondition = followingList.length > 0
+        ? sql`AND id NOT IN (${sql.join(followingList, sql`, `)})`
+        : sql``;
+
+    const results = await db.execute(sql`
+  SELECT name, username, cover_image_url
+  FROM users
+  WHERE id != ${session.user.id}
+  ${followingListCondition}
+  ORDER BY RANDOM()
+  LIMIT 20;
+`);
     const user = await db.select().from(users).where(eq(users.id, session.user.id as string));
     let username: string | null = null;
     if ('username' in user) {
@@ -169,13 +181,19 @@ export async function pullUsers() {
 export async function followUser(username: string) {
     const session = await auth();
     if (!session || !session.user) {
-        return false;
+        return NextResponse.json({
+            result: "Failed",
+            message: "Not logged in"
+        });
     }
     const a = session.user.id;
 
     const second_user = await getUserByName(username);
     if (!second_user) {
-        return false;
+        return NextResponse.json({
+            result: "Failed",
+            message: "User doesn't exist"
+        });
     }
     const b = second_user.id;
 
@@ -186,15 +204,27 @@ export async function followUser(username: string) {
         if (followCheck.length > 0) {
             const deleteResult = await db.delete(userFollows).where(and(eq(userFollows.a, a as string), eq(userFollows.b, b as string)));
             console.log("Delete successful:", deleteResult);
-            return true;
+            return NextResponse.json({
+                result: "Unfollowed",
+                message: "Successfully unfollowed"
+            });
         } else {
             const insertResult = await db.insert(userFollows).values({ a: a as string, b: b as string }).returning();
             console.log("Insert successful:", insertResult);
-            return true;
+            return NextResponse.json({
+                result: "Followed",
+                message: "Successfully followed"
+            });
         }
     } catch (error) {
         console.error("Operation failed:", error);
-        return false;
+        return NextResponse.json({
+            result: "Failed",
+            message: "Operation failed"
+        });
+    }
+    finally {
+        revalidatePath(`/${second_user.username}`)
     }
 }
 
@@ -219,5 +249,44 @@ export async function getUserProfile(username: string) {
 
 
     return user.rows;
+
+}
+
+export async function checkFollow(username: string) {
+    const session = await auth();
+    if (!session || !session.user) {
+        return NextResponse.json({
+            result: false,
+            message: "Not logged in"
+        });
+    }
+    const a = session.user.id;
+
+    const second_user = await getUserByName(username);
+    if (!second_user) {
+        return NextResponse.json({
+            result: false,
+            message: "User doesn't exist"
+        });
+    }
+    const b = second_user.id;
+
+    try {
+        const followCheck = await db.select().from(userFollows).where(and(eq(userFollows.a, a as string), eq(userFollows.b, b as string)));
+        if (followCheck.length > 0) {
+            return NextResponse.json({
+                result: true,
+            });
+        } else {
+            return NextResponse.json({
+                result: false,
+            });
+        }
+    }
+    catch (error) {
+        return NextResponse.json({
+            message: "Couldn't get data."
+        });
+    }
 
 }

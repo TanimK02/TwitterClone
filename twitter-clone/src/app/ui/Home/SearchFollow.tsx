@@ -1,20 +1,45 @@
+"use client"
+
 import '@/app/(overview)/Home/home.css'
 import searchPic from '@/public/search.svg'
 import Image from 'next/image'
 import Link from 'next/link'
 import profile from '@/public/profile.svg'
-import { pullUsers } from '@/app/lib/actions'
 import FollowButton from './FollowButton'
+import { useEffect } from 'react'
+import { usePathname } from 'next/navigation'
+import { useState } from 'react'
 type returnUsers = {
     cover_image_url: string | null,
     username: string,
     name: string
 }
 
-export default async function SearchFollow() {
-    const results: returnUsers[] = await pullUsers() as returnUsers[];
+export default function SearchFollow() {
+    const [results, updateResults] = useState<returnUsers[]>([])
+    const pathname = usePathname();
+    useEffect(() => {
+        fetch(`/api/userPull`).then(
+            response => {
+                if (!response.ok) {
+                    throw new Error("Failed to pull users")
+                }
+
+                return response.json()
+            }
+        ).then(data => {
+
+            updateResults(data.result);
+        })
+
+    }, [])
+
     const links = []
+
     for (let i = 0; i < results.length; i++) {
+        if (pathname.includes(encodeURIComponent(results[i].username))) {
+            continue
+        }
         links.push(
 
             <div className='info' key={i}>

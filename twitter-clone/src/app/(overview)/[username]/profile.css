@@ -16,3 +16,13 @@
 .profile::-webkit-scrollbar {
     display: none;
 }
+
+@media(max-width: 950px) {
+    .alignment {
+        grid-template-columns: 20% 80%;
+    }
+
+    .profile {
+        border-right: 1px solid rgba(255, 255, 255, 0.183);
+    }
+}

@@ -1,9 +1,9 @@
-import { getUserProfile } from "@/app/lib/actions"
+import { checkFollow, getUserProfile } from "@/app/lib/actions"
 import styles from "@/app/ui/profile/Dashboard.module.css"
 import { auth } from "@/auth";
 import profile from "@/public/profile.svg"
 import { redirect } from "next/navigation";
-
+import FollowButton from "@/app/ui/Home/FollowButton";
 type returnUserProfile = {
     cover_image_url: string | null,
     username: string,
@@ -14,12 +14,15 @@ type returnUserProfile = {
     followers: number
 }
 
+
 export default async function Dashboard({ username }: { username: string }) {
 
     const user: returnUserProfile[] = await getUserProfile(username) as returnUserProfile[];
     if (!user) {
         redirect("/Home")
     }
+    const response = await checkFollow(user[0].username);
+    const following = await response.json();
     const session = await auth();
     function formatMonthYear(dateString: string): string {
         const date = new Date(dateString);
@@ -40,6 +43,7 @@ export default async function Dashboard({ username }: { username: string }) {
                 <div className={styles.InfoContainer}>
                     <div className={styles.NameDiv}>
                         <span className={styles.name}>{user[0].name || "No Name Exists"}</span>
+
                         <span className={styles.username}>@{user[0].username}</span>
                     </div>
                     <span className={styles.date}>Joined {formatMonthYear(user[0].created_at)}</span>
@@ -48,11 +52,15 @@ export default async function Dashboard({ username }: { username: string }) {
                         <div className={styles.following}>{user[0].following} <div style={{ color: "rgb(113, 118, 123)" }}>Following</div></div>
                         <div className={styles.followers}>{user[0].followers} <div style={{ color: "rgb(113, 118, 123)" }}>Followers</div></div>
                     </div>
+
                 </div>
-                {session?.user?.id !== user[0].id && (
-                    <button className={styles.followButton}>Follow</button>
-                )}
+
             </div>
+            {session?.user?.id !== user[0].id && (
+                <div className={styles.ButtonDiv}>
+                    <FollowButton username={user[0].username} className={styles.followButton} curFollow={following.result ? true : false}></FollowButton>
+                </div>
+            )}
         </div>
     </>)
 }

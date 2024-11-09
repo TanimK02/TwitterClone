@@ -1,11 +1,19 @@
 'use client'
-
-import { useState } from "react"
-export default function FollowButton({ username }: { username: string }) {
+type FollowButtonProps = {
+    username: string,
+    curFollow?: boolean
+} & React.ComponentPropsWithoutRef<'button'>
+import { useState, useEffect } from "react"
+export default function FollowButton({ username, className, curFollow }: FollowButtonProps) {
     const [following, setFollow] = useState(false);
     username = decodeURIComponent(username);
     const [pending, setPending] = useState(false);
-    return (<button disabled={pending} onClick={() => {
+    useEffect(() => {
+        if (curFollow) {
+            setFollow(true);
+        }
+    }, [])
+    return (<button className={className ? className : ""} disabled={pending} onClick={() => {
         setPending(true);
         fetch(`/api/userInteractions?username=${username}`).then(response => {
             if (!response.ok) {
@@ -14,8 +22,10 @@ export default function FollowButton({ username }: { username: string }) {
             return response.json()
         }).then(data => {
             console.log(data.result)
-            if (data.result == "Success") {
-                setFollow(!following);
+            if (data.result == "Followed") {
+                setFollow(true);
+            } else {
+                setFollow(false)
             }
         }
         ).finally(() => {
