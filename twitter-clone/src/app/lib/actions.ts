@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { auth } from '@/auth';
-import { users, tweet, userFollows } from '@/db/schema';
+import { users, tweet, userFollows, media } from '@/db/schema';
 import { db } from '@/index';
 import { and, eq, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -289,4 +289,93 @@ export async function checkFollow(username: string) {
         });
     }
 
+}
+
+export async function checkUsernameStatus(username: string) {
+    const session = await auth();
+    if (!session || !session.user) {
+        return {
+            result: false,
+            message: "Not logged in",
+            status: 401
+        };
+    }
+    try {
+        const result = await db.select({ username: users.username }).from(users).where(eq(users.username, username));
+        if (result.length > 0) {
+            return {
+                result: false,
+                message: "Username taken.",
+                status: 409
+            };
+        }
+        else {
+            return {
+                result: true,
+                message: "Username available.",
+                status: 200
+            };
+        }
+    } catch (error) {
+        return {
+            result: false,
+            message: "Check username operation failed",
+            status: 500
+        };
+    }
+}
+
+export async function changeName(name: string) {
+    const session = await auth();
+    if (!session || !session.user) {
+        return {
+            message: "Not logged in",
+            status: 401
+        };
+    }
+    try {
+
+        await db.update(users).set({ name: name }).where(eq(users.id, session.user.id as string));
+        return {
+            messsage: "username change successful",
+            status: 200
+        }
+    }
+    catch (error) {
+        return {
+            messsage: "Internal Server Error",
+            status: 500
+        }
+    }
+}
+
+export async function changeProfilePicture(mediaId: string) {
+    const session = await auth();
+    if (!session || !session.user) {
+        return {
+            message: "Not logged in",
+            status: 401
+        };
+    }
+
+    try {
+        const mediaCheck = await db.select().from(media).where(eq(media.id, mediaId))
+        if (mediaCheck.length < 0) {
+            return {
+                message: "Media not found",
+                status: 404
+            };
+        }
+        await db.update(users).set({ coverImageUrl: mediaId }).where(eq(users.id, session.user.id as string))
+        return {
+            message: "Updated profile image",
+            status: 200
+        }
+    }
+    catch (error) {
+        return {
+            message: "Internal server error",
+            status: 500
+        }
+    }
 }

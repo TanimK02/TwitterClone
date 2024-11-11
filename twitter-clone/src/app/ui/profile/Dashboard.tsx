@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import profile from "@/public/profile.svg"
 import { redirect } from "next/navigation";
 import FollowButton from "@/app/ui/Home/FollowButton";
+import EditProfile from "./EditProfile";
 type returnUserProfile = {
     cover_image_url: string | null,
     username: string,
@@ -56,11 +57,14 @@ export default async function Dashboard({ username }: { username: string }) {
                 </div>
 
             </div>
-            {session?.user?.id !== user[0].id && (
-                <div className={styles.ButtonDiv}>
+            <div className={styles.ButtonDiv}>
+                {session?.user?.id !== user[0].id && (
                     <FollowButton username={user[0].username} className={styles.followButton} curFollow={following.result ? true : false}></FollowButton>
-                </div>
-            )}
+                )}
+                {session?.user?.id == user[0].id && (
+                    <EditProfile className={styles.followButton} first={!user[0].cover_image_url ? true : false} />
+                )}
+            </div>
         </div>
     </>)
 }
