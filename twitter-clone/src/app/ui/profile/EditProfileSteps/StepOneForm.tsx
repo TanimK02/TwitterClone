@@ -4,12 +4,24 @@ import styles from "@/app/ui/profile/EditProfile.module.css"
 import profile from "@/public/profile.svg"
 import camera from "@/public/camera.svg"
 import { useRef, useState } from "react"
-export default function StepOneForm() {
+export default function StepOneForm({ step, updateStep, picture, setPicture }: { step: number, updateStep: React.Dispatch<React.SetStateAction<number>>, picture: string, setPicture: React.Dispatch<React.SetStateAction<string>> }) {
     const imgInput = useRef<HTMLInputElement | null>(null);
-    const [picture, setPicture] = useState<string | null>(null);
-
+    const profileImage = useRef<HTMLImageElement | null>(null);
     const imgClick = () => {
         imgInput.current?.click();
+    }
+
+    const onImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const input = event.target as HTMLInputElement;
+        if (input.files) {
+            const file = Array.from(input.files)[0]
+            if (file.type.startsWith("image/")) {
+                setPicture(URL.createObjectURL(file))
+                if (profileImage.current) {
+                    profileImage.current.src = picture || profile.src;
+                }
+            }
+        }
     }
     return (<>
         <div className={styles.FormDiv}>
@@ -22,18 +34,18 @@ export default function StepOneForm() {
             <div className={styles.InputDiv}>
                 <div onClick={imgClick} className={styles.ImageContainer}>
                     <div style={{ top: "0", left: "0", backgroundColor: "rgba(91, 112, 131, 0.4)", width: "100%", height: "100%" }}>
-                        <img className={styles.ProfileImage} src={profile.src}></img>
+                        <img ref={profileImage} className={styles.ProfileImage} src={picture || profile.src}></img>
                         <div className={styles.CameraContainer}>
                             <img className={styles.Camera} src={camera.src}></img>
                         </div>
                     </div>
                 </div>
-                <input ref={imgInput} type="file" style={{ display: "none" }}></input>
+                <input ref={imgInput} onChange={onImageChange} type="file" accept="image/*" style={{ display: "none" }}></input>
             </div>
 
         </div>
         <div className={styles.NextButtonDiv}>
-            <button className={styles.NextButton}>Next</button>
+            <button onClick={() => updateStep(step + 1)} className={styles.NextButton}>{picture ? "Next" : "Skip For Now"}</button>
         </div>
     </>)
 }
