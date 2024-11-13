@@ -8,6 +8,26 @@ export default function StepTwoForm({ step, updateStep, bio, setBio }: { step: n
         const input = event.target as HTMLTextAreaElement;
         setBio(input.value)
     }
+    const EditLabel = useRef<HTMLLabelElement | null>(null);
+    const EditSpan = useRef<HTMLSpanElement | null>(null);
+
+    const handleFocus = () => {
+        if (EditLabel.current) {
+            EditLabel.current.style.borderColor = "#1DA1F2"
+        }
+        if (EditSpan.current) {
+            EditSpan.current.style.color = "#1DA1F2"
+        }
+    }
+
+    const handleOnBlur = () => {
+        if (EditLabel.current) {
+            EditLabel.current.style.borderColor = "rgba(255, 255, 255, 0.183)"
+        }
+        if (EditSpan.current) {
+            EditSpan.current.style.color = "rgb(113, 118, 123)"
+        }
+    }
     return (<>
         <div className={styles.FormDiv}>
             <div className={styles.TopDiv}>
@@ -16,10 +36,10 @@ export default function StepTwoForm({ step, updateStep, bio, setBio }: { step: n
                     <p>What makes you special? Don't think too hard, just have fun with it.</p>
                 </div>
             </div>
-            <div className={styles.InputDiv}>
-                <label className={styles.BioEditLabel}>
-                    <div className={styles.BioEditDiv}><span>Your bio</span><div>{`${textRef.current?.value.length || 0}/160`}</div></div>
-                    <textarea className={styles.BioEditTextArea} maxLength={160} ref={textRef} onChange={onTextChange}></textarea>
+            <div className={styles.InputDiv2}>
+                <label ref={EditLabel} className={styles.BioEditLabel}>
+                    <div className={styles.BioEditDiv}><span ref={EditSpan}>Your bio</span><div>{`${textRef.current?.value.length || 0}/160`}</div></div>
+                    <textarea onBlur={() => handleOnBlur()} onFocus={() => handleFocus()} className={styles.BioEditTextArea} maxLength={160} ref={textRef} onChange={onTextChange}></textarea>
                 </label>
             </div>
 

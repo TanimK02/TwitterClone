@@ -111,3 +111,53 @@
     font-size: 1rem;
     font-weight: bold;
 }
+
+.InputDiv2 {
+    height: 40%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.BioEditLabel {
+    width: 100%;
+    height: 40%;
+    border: 1px solid rgba(255, 255, 255, 0.183);
+    border-radius: 5px;
+    padding: 5px;
+
+}
+
+.BioEditLabel:hover {
+    cursor: text;
+}
+
+.BioEditDiv {
+    display: flex;
+    justify-content: space-between;
+}
+
+.BioEditDiv span {
+    color: rgb(113, 118, 123);
+    font-size: 0.9rem;
+}
+
+.BioEditDiv div {
+    color: rgb(113, 118, 123);
+    font-size: 0.9rem;
+}
+
+.BioEditTextArea {
+    margin-top: 5px;
+    background-color: transparent;
+    width: 100%;
+    height: 100%;
+    border: none;
+    resize: none;
+    font-size: 1.25rem;
+}
+
+.BioEditTextArea:focus {
+    outline: none;
+}
