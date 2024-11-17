@@ -19,7 +19,10 @@ const nextConfig = {
         config.cache = false;
         return config;
     },
-    reactStrictMode: false, // You've mentioned turning this off.
+    reactStrictMode: true, // You've mentioned turning this off.
+    images: {
+        domains: ['twitterclone-bucket.s3.us-east-2.amazonaws.com'], // Add this to allow images from your S3 bucket
+    },
     async headers() {
         return [
             {

@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Redirect to Home if authenticated but missing username
-    if (isAuthenticated && (!username || typeof username == "undefined") && pathname !== '/Home') {
+    if (isAuthenticated && (!username) && pathname !== '/Home') {
         return NextResponse.redirect(new URL('/Home', request.url));
     }
 

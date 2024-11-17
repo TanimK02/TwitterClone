@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import styles from '@/app/ui/Feed/Feed.module.css'
 import TweetItem from "@/app/ui/Feed/TweetItem";
 import TopNav from "@/app/ui/Home/NavTop";
+import { pullTweetsFromFollowing } from "@/app/lib/TweetActions/actions";
 type Tweet = {
     id: string;
     content: string;
@@ -17,14 +18,18 @@ type Tweet = {
 };
 export default function Feed({ username }: { username?: string }) {
     const [tweets, updateTweets] = useState<Tweet[]>([]);
-    const loadInTweets = async () => {
+    const loadInTweets = async (erase: boolean = false) => {
         const data = fetch(`/api/pullTweets?timestamp=${new Date().toISOString()}`).then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch tweets');
             }
             return response.json(); // Parse the response JSON
         }).then(data => {
-            updateTweets([...tweets, ...data.results]);
+            if (erase) {
+                updateTweets([...data.results])
+            } else {
+                updateTweets([...tweets, ...data.results]);
+            }
 
             // Do something with data.results if your response format is { results: [...] }
         })
@@ -33,14 +38,38 @@ export default function Feed({ username }: { username?: string }) {
             });
     }
 
-    const loadInProfileTweets = async (offset: number = 0) => {
+    const loadInProfileTweets = async (offset: number = 0, erase: boolean = false) => {
         const data = fetch(`/api/profile?username=${username}&offset=${offset}`).then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch tweets');
             }
             return response.json(); // Parse the response JSON
         }).then(data => {
-            updateTweets([...tweets, ...data.results]);
+            if (erase) {
+                updateTweets([...data.results])
+            } else {
+                updateTweets([...tweets, ...data.results]);
+            }
+
+            // Do something with data.results if your response format is { results: [...] }
+        })
+            .catch(error => {
+                console.error('Error loading tweets:', error);
+            });
+    }
+
+    const loadInFollowingTweets = async (offset: number = 0, erase: boolean = false) => {
+        const data = fetch(`/api/pullFollowingTweets?&offset=${offset}`).then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch tweets');
+            }
+            return response.json(); // Parse the response JSON
+        }).then(data => {
+            if (erase) {
+                updateTweets([...data.results])
+            } else {
+                updateTweets([...tweets, ...data.results]);
+            }
 
             // Do something with data.results if your response format is { results: [...] }
         })
@@ -66,19 +95,25 @@ export default function Feed({ username }: { username?: string }) {
         return mediaList;
     }
 
+    const [following, setFollowing] = useState<boolean>(false);
+
     useEffect(() => {
-        if (!username) {
-            loadInTweets();
+
+        if (!username && !following) {
+            loadInTweets(true);
+        }
+        else if (following) {
+            loadInFollowingTweets(0, true);
         }
         else {
-            loadInProfileTweets()
+            loadInProfileTweets(0, true)
         }
 
-    }, [])
+    }, [following])
     return (
         <>{!username &&
             <>
-                <TopNav></TopNav>
+                <TopNav following={following} setFollowing={setFollowing}></TopNav>
                 <TweetPost></TweetPost>
             </>}
             <div className={styles.FeedContainer}>

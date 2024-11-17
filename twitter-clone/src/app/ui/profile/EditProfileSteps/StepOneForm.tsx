@@ -4,7 +4,7 @@ import styles from "@/app/ui/profile/EditProfile.module.css"
 import profile from "@/public/profile.svg"
 import camera from "@/public/camera.svg"
 import { useRef, useState } from "react"
-export default function StepOneForm({ step, updateStep, picture, setPicture }: { step: number, updateStep: React.Dispatch<React.SetStateAction<number>>, picture: string, setPicture: React.Dispatch<React.SetStateAction<string>> }) {
+export default function StepOneForm({ step, updateStep, picture, setPicture }: { step: number, updateStep: React.Dispatch<React.SetStateAction<number>>, picture: File | undefined, setPicture: React.Dispatch<React.SetStateAction<File | undefined>> }) {
     const imgInput = useRef<HTMLInputElement | null>(null);
     const profileImage = useRef<HTMLImageElement | null>(null);
     const imgClick = () => {
@@ -16,12 +16,13 @@ export default function StepOneForm({ step, updateStep, picture, setPicture }: {
         if (input.files) {
             const file = Array.from(input.files)[0]
             if (file.type.startsWith("image/")) {
-                setPicture(URL.createObjectURL(file))
-                if (profileImage.current) {
-                    profileImage.current.src = picture || profile.src;
+                setPicture(file)
+                if (picture && profileImage.current) {
+                    profileImage.current.src = URL.createObjectURL(picture) || profile.src;
                 }
             }
         }
+
     }
     return (<>
         <div className={styles.FormDiv}>
@@ -34,13 +35,13 @@ export default function StepOneForm({ step, updateStep, picture, setPicture }: {
             <div className={styles.InputDiv}>
                 <div onClick={imgClick} className={styles.ImageContainer}>
                     <div style={{ top: "0", left: "0", backgroundColor: "rgba(91, 112, 131, 0.4)", width: "100%", height: "100%" }}>
-                        <img ref={profileImage} className={styles.ProfileImage} src={picture || profile.src}></img>
+                        <img ref={profileImage} className={styles.ProfileImage} src={picture ? URL.createObjectURL(picture) : profile.src}></img>
                         <div className={styles.CameraContainer}>
                             <img className={styles.Camera} src={camera.src}></img>
                         </div>
                     </div>
                 </div>
-                <input ref={imgInput} onChange={onImageChange} type="file" accept="image/*" style={{ display: "none" }}></input>
+                <input ref={imgInput} onChange={onImageChange} type="file" accept="image/jpeg,image/png,image/webp,image/gif" style={{ display: "none" }}></input>
             </div>
 
         </div>

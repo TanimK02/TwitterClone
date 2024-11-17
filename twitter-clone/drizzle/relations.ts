@@ -1,35 +1,41 @@
 import { relations } from "drizzle-orm/relations";
-import { users, sessions, tweet, messages, userSettings, media, userFollows, accounts, hashtags, hashtagsToTweet, likes } from "./schema";
+import { users, media, tweet, messages, sessions, userFollows, userSettings, hashtags, hashtagsToTweet, likes, authenticators, account } from "./schema";
 
-export const sessionsRelations = relations(sessions, ({one}) => ({
+export const mediaRelations = relations(media, ({one}) => ({
 	user: one(users, {
-		fields: [sessions.userId],
+		fields: [media.userId],
 		references: [users.id]
+	}),
+	tweet: one(tweet, {
+		fields: [media.tweetId],
+		references: [tweet.id]
 	}),
 }));
 
 export const usersRelations = relations(users, ({many}) => ({
-	sessions: many(sessions),
-	tweets: many(tweet),
+	media: many(media),
 	messages_senderId: many(messages, {
 		relationName: "messages_senderId_users_id"
 	}),
 	messages_receiverId: many(messages, {
 		relationName: "messages_receiverId_users_id"
 	}),
-	userSettings: many(userSettings),
-	media: many(media),
+	sessions: many(sessions),
 	userFollows_a: many(userFollows, {
 		relationName: "userFollows_a_users_id"
 	}),
 	userFollows_b: many(userFollows, {
 		relationName: "userFollows_b_users_id"
 	}),
-	accounts: many(accounts),
+	userSettings: many(userSettings),
+	tweets: many(tweet),
 	likes: many(likes),
+	authenticators: many(authenticators),
+	accounts: many(account),
 }));
 
 export const tweetRelations = relations(tweet, ({one, many}) => ({
+	media: many(media),
 	user: one(users, {
 		fields: [tweet.userId],
 		references: [users.id]
@@ -42,7 +48,6 @@ export const tweetRelations = relations(tweet, ({one, many}) => ({
 	tweets: many(tweet, {
 		relationName: "tweet_parentTweetId_tweet_id"
 	}),
-	media: many(media),
 	hashtagsToTweets: many(hashtagsToTweet),
 	likes: many(likes),
 }));
@@ -60,21 +65,10 @@ export const messagesRelations = relations(messages, ({one}) => ({
 	}),
 }));
 
-export const userSettingsRelations = relations(userSettings, ({one}) => ({
+export const sessionsRelations = relations(sessions, ({one}) => ({
 	user: one(users, {
-		fields: [userSettings.userId],
+		fields: [sessions.userId],
 		references: [users.id]
-	}),
-}));
-
-export const mediaRelations = relations(media, ({one}) => ({
-	user: one(users, {
-		fields: [media.userId],
-		references: [users.id]
-	}),
-	tweet: one(tweet, {
-		fields: [media.tweetId],
-		references: [tweet.id]
 	}),
 }));
 
@@ -91,9 +85,9 @@ export const userFollowsRelations = relations(userFollows, ({one}) => ({
 	}),
 }));
 
-export const accountsRelations = relations(accounts, ({one}) => ({
+export const userSettingsRelations = relations(userSettings, ({one}) => ({
 	user: one(users, {
-		fields: [accounts.userId],
+		fields: [userSettings.userId],
 		references: [users.id]
 	}),
 }));
@@ -121,5 +115,19 @@ export const likesRelations = relations(likes, ({one}) => ({
 	tweet: one(tweet, {
 		fields: [likes.tweetId],
 		references: [tweet.id]
+	}),
+}));
+
+export const authenticatorsRelations = relations(authenticators, ({one}) => ({
+	user: one(users, {
+		fields: [authenticators.userId],
+		references: [users.id]
+	}),
+}));
+
+export const accountRelations = relations(account, ({one}) => ({
+	user: one(users, {
+		fields: [account.userId],
+		references: [users.id]
 	}),
 }));

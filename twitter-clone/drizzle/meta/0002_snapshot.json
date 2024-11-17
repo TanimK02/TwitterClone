@@ -1,6 +1,6 @@
 {
-  "id": "35d63b91-4438-441d-8898-25a6867aea9e",
-  "prevId": "264d49bc-de11-40db-8c89-8186d04cccac",
+  "id": "31ab6ff3-7b3a-4848-8fb7-42fa89761bb5",
+  "prevId": "3a281d64-0e09-478a-8620-1276e1c676d3",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -8,6 +8,12 @@
       "name": "account",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "userId": {
           "name": "userId",
           "type": "text",
@@ -176,8 +182,8 @@
         "authenticators_user_id_credential_id_pk": {
           "name": "authenticators_user_id_credential_id_pk",
           "columns": [
-            "user_id",
-            "credential_id"
+            "credential_id",
+            "user_id"
           ]
         }
       },
@@ -417,6 +423,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "profilePicture": {
+          "name": "profilePicture",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "createdAt": {
           "name": "createdAt",
           "type": "timestamp(3)",
@@ -534,13 +547,13 @@
         "id": {
           "name": "id",
           "type": "text",
-          "primaryKey": true,
-          "notNull": true
+          "primaryKey": false,
+          "notNull": false
         },
         "session_token": {
           "name": "session_token",
           "type": "text",
-          "primaryKey": false,
+          "primaryKey": true,
           "notNull": true
         },
         "user_id": {
@@ -573,15 +586,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "sessions_session_token_unique": {
-          "name": "sessions_session_token_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "session_token"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "checkConstraints": {}
     },
     "public.Tweet": {
@@ -612,6 +617,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
         "tweet_type": {
           "name": "tweet_type",
           "type": "TweetType",
@@ -619,13 +631,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'DEFAULT'"
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp(3)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
         }
       },
       "indexes": {},
@@ -970,7 +975,18 @@
       "checkConstraints": {}
     }
   },
-  "enums": {},
+  "enums": {
+    "public.TweetType": {
+      "name": "TweetType",
+      "schema": "public",
+      "values": [
+        "DEFAULT",
+        "REPLY",
+        "RETWEET",
+        "QUOTE"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
   "views": {},

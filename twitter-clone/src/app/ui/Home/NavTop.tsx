@@ -3,10 +3,10 @@ import { useEffect, useState, useRef } from "react"
 import Link from "next/link"
 import '@/app/ui/Home/NavTop.css'
 
-export default function TopNav() {
-    const spanRef = useRef(null);
+export default function TopNav({ following, setFollowing }: { following: boolean, setFollowing: React.Dispatch<React.SetStateAction<boolean>> }) {
+    const spanRef = useRef<HTMLSpanElement | null>(null);
     const [lineWidth, setWidth] = useState(0);
-    const spanRef2 = useRef(null);
+    const spanRef2 = useRef<HTMLSpanElement | null>(null);
     const [lineWidth2, setWidth2] = useState(0);
     useEffect((() => {
         if (spanRef.current) {
@@ -17,17 +17,23 @@ export default function TopNav() {
         }
     }), []);
 
-    const firstLine = useRef(null);
-    const secondLine = useRef(null);
+    const firstLine = useRef<HTMLDivElement | null>(null);
+    const secondLine = useRef<HTMLDivElement | null>(null);
 
     const change1 = () => {
-        firstLine.current.hidden = false;
-        secondLine.current.hidden = true;
+        if (firstLine.current && secondLine.current) {
+            firstLine.current.hidden = false;
+            secondLine.current.hidden = true;
+            setFollowing(false)
+        }
     }
 
     const change2 = () => {
-        firstLine.current.hidden = true;
-        secondLine.current.hidden = false;
+        if (firstLine.current && secondLine.current) {
+            firstLine.current.hidden = true;
+            secondLine.current.hidden = false;
+            setFollowing(true)
+        }
     }
 
     return (

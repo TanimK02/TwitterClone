@@ -2,15 +2,16 @@
 
 import styles from '@/app/ui/Home/TweetPost.module.css'
 import profile from '@/public/profile.svg'
-import majin from "@/public/majin-buu.jpg"
 import Image from 'next/image'
 import gif from '@/public/gif.svg'
 import imagePic from '@/public/image.svg'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import close from '@/public/close.svg'
 import { getSignedURL, createTweet } from '@/app/lib/TweetActions/actions'
+import { getOwnProfile } from '@/app/lib/actions'
 
 export default function TweetPost() {
+
     const imgInput = useRef<HTMLInputElement | null>(null);
     const [images, setImages] = useState<{ file: File, previewUrl: string }[]>([]);
     const picVidDiv = useRef<HTMLDivElement | null>(null);
@@ -120,15 +121,27 @@ export default function TweetPost() {
     };
 
 
+    const [coverImage, updateImage] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchCoverImage = async () => {
+            const imageUrl = await getOwnProfile();
+            if (imageUrl.status == 200 && imageUrl.user?.coverImageUrl) {
+                updateImage(imageUrl.user?.coverImageUrl);
+            }
+        };
+
+        fetchCoverImage();
+    }, []);
     return (
         <>
             <div className={styles.tweetPostContainer}>
                 <div className={styles.profileContainer}>
-                    <Image src={majin} height={40} width={40} alt='Profile picture in tweet box' style={{ aspectRatio: "40 : 40" }}></Image>
+                    <Image src={coverImage ? coverImage : profile.src} height={40} width={40} alt='Profile picture in tweet box' style={{ aspectRatio: "40 : 40" }}></Image>
                 </div>
                 <form className={styles.tweetContainer} onSubmit={handleSubmit}>
                     <div className={styles.inputContainer}>
-                        <textarea ref={text} name="content" placeholder='Whats is happening?!' required></textarea>
+                        <textarea ref={text} name="content" placeholder='What is happening?!' required></textarea>
                         <div ref={picVidDiv} className={styles.imageContainer}>
                             {
                                 images.map((mediaData, index) => (

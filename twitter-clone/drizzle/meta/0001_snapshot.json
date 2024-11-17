@@ -1,5 +1,5 @@
 {
-  "id": "264d49bc-de11-40db-8c89-8186d04cccac",
+  "id": "3a281d64-0e09-478a-8620-1276e1c676d3",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -8,6 +8,12 @@
       "name": "account",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "userId": {
           "name": "userId",
           "type": "text",
@@ -176,8 +182,8 @@
         "authenticators_user_id_credential_id_pk": {
           "name": "authenticators_user_id_credential_id_pk",
           "columns": [
-            "user_id",
-            "credential_id"
+            "credential_id",
+            "user_id"
           ]
         }
       },
@@ -417,6 +423,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "profilePicture": {
+          "name": "profilePicture",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "createdAt": {
           "name": "createdAt",
           "type": "timestamp(3)",
@@ -531,6 +544,12 @@
       "name": "sessions",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "session_token": {
           "name": "session_token",
           "type": "text",
@@ -598,6 +617,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
         "tweet_type": {
           "name": "tweet_type",
           "type": "TweetType",
@@ -606,12 +632,12 @@
           "notNull": true,
           "default": "'DEFAULT'"
         },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp(3)",
+        "profile_picture": {
+          "name": "profile_picture",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
+          "default": false
         }
       },
       "indexes": {},

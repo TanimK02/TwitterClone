@@ -1,0 +1,1 @@
+ALTER TABLE "Tweet" ADD COLUMN "profile_picture" boolean DEFAULT false NOT NULL;

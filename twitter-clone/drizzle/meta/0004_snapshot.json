@@ -1,6 +1,6 @@
 {
-  "id": "fc352b37-4cbc-4a20-ab67-ba14cf01d3e1",
-  "prevId": "2e087036-bbce-4bf8-a63b-0cd566893952",
+  "id": "ccf577aa-295b-4eef-958f-bb80d45846fb",
+  "prevId": "283e581c-1722-41ef-b26b-7551eeffa1f1",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -8,14 +8,8 @@
       "name": "account",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "userId": {
-          "name": "userId",
+        "user_id": {
+          "name": "user_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -32,8 +26,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "providerAccountId": {
-          "name": "providerAccountId",
+        "provider_account_id": {
+          "name": "provider_account_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -82,27 +76,13 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "account_userId_users_id_fk": {
-          "name": "account_userId_users_id_fk",
-          "tableFrom": "account",
-          "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {
-        "account_provider_providerAccountId_pk": {
-          "name": "account_provider_providerAccountId_pk",
+        "account_provider_provider_account_id_pk": {
+          "name": "account_provider_provider_account_id_pk",
           "columns": [
             "provider",
-            "providerAccountId"
+            "provider_account_id"
           ]
         }
       },
@@ -182,8 +162,8 @@
         "authenticators_user_id_credential_id_pk": {
           "name": "authenticators_user_id_credential_id_pk",
           "columns": [
-            "user_id",
-            "credential_id"
+            "credential_id",
+            "user_id"
           ]
         }
       },
@@ -423,6 +403,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "profilePicture": {
+          "name": "profilePicture",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
         "createdAt": {
           "name": "createdAt",
           "type": "timestamp(3)",
@@ -537,12 +524,6 @@
       "name": "sessions",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "session_token": {
           "name": "session_token",
           "type": "text",
@@ -563,31 +544,9 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "sessions_user_id_users_id_fk": {
-          "name": "sessions_user_id_users_id_fk",
-          "tableFrom": "sessions",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "sessions_session_token_unique": {
-          "name": "sessions_session_token_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "session_token"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "checkConstraints": {}
     },
     "public.Tweet": {
@@ -618,6 +577,13 @@
           "primaryKey": false,
           "notNull": false
         },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
         "tweet_type": {
           "name": "tweet_type",
           "type": "TweetType",
@@ -626,12 +592,12 @@
           "notNull": true,
           "default": "'DEFAULT'"
         },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp(3)",
+        "profile_picture": {
+          "name": "profile_picture",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": true,
-          "default": "CURRENT_TIMESTAMP"
+          "default": false
         }
       },
       "indexes": {},
@@ -843,7 +809,7 @@
         },
         "username": {
           "name": "username",
-          "type": "varchar(50)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -853,9 +819,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "display_name": {
-          "name": "display_name",
-          "type": "varchar(100)",
+        "displayName": {
+          "name": "displayName",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -873,69 +839,30 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamp(3)",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamp(3)",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {
-        "users_email_key": {
-          "name": "users_email_key",
-          "columns": [
-            {
-              "expression": "email",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "users_username_key": {
-          "name": "users_username_key",
-          "columns": [
-            {
-              "expression": "username",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "users_email_unique": {
-          "name": "users_email_unique",
-          "nullsNotDistinct": false,
+      "compositePrimaryKeys": {
+        "users_email_pk": {
+          "name": "users_email_pk",
           "columns": [
             "email"
           ]
-        },
-        "users_username_unique": {
-          "name": "users_username_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
         }
       },
+      "uniqueConstraints": {},
       "checkConstraints": {}
     },
     "public.verification_tokens": {
@@ -976,7 +903,18 @@
       "checkConstraints": {}
     }
   },
-  "enums": {},
+  "enums": {
+    "public.TweetType": {
+      "name": "TweetType",
+      "schema": "public",
+      "values": [
+        "DEFAULT",
+        "REPLY",
+        "RETWEET",
+        "QUOTE"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
   "views": {},

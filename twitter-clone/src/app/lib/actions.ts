@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import { auth } from '@/auth';
 import { users, tweet, userFollows, media } from '@/db/schema';
 import { db } from '@/index';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, getTableColumns, sql } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
 const UserSchema = z.object({
@@ -349,7 +349,7 @@ export async function changeName(name: string) {
     }
 }
 
-export async function changeProfilePicture(mediaId: string) {
+export async function changeProfilePicture(mediaUrl: string) {
     const session = await auth();
     if (!session || !session.user) {
         return {
@@ -358,15 +358,22 @@ export async function changeProfilePicture(mediaId: string) {
         };
     }
 
+    mediaUrl = mediaUrl.split("?")[0]
+
     try {
-        const mediaCheck = await db.select().from(media).where(eq(media.id, mediaId))
+        const mediaCheck = await db.select().from(media).where(eq(media.url, mediaUrl))
         if (mediaCheck.length < 0) {
             return {
                 message: "Media not found",
                 status: 404
             };
         }
-        await db.update(users).set({ coverImageUrl: mediaId }).where(eq(users.id, session.user.id as string))
+        await db.update(media).set({ profilePicture: true }).where(eq(media.id, mediaCheck[0].id))
+        const curProfilePic = await db.select({ coverImageUrl: users.coverImageUrl }).from(users).where(eq(users.id, session.user.id as string))
+        if (curProfilePic.length > 0) {
+            await db.delete(media).where(eq(media.url, curProfilePic[0].coverImageUrl as string))
+        }
+        await db.update(users).set({ coverImageUrl: mediaUrl }).where(eq(users.id, session.user.id as string))
         return {
             message: "Updated profile image",
             status: 200
@@ -378,4 +385,31 @@ export async function changeProfilePicture(mediaId: string) {
             status: 500
         }
     }
+}
+
+export async function getOwnProfile() {
+    const session = await auth();
+    if (!session || !session.user) {
+        return {
+            status: 401
+        };
+    }
+
+    try {
+
+        const { passwordHash, ...rest } = getTableColumns(users);
+        const result = await db.select({ ...rest }).from(users).where(eq(users.id, session.user.id as string));
+
+        return {
+            user: result[0],
+            status: 200
+        }
+
+    } catch (error) {
+        return {
+            status: 500
+        }
+    }
+
+
 }

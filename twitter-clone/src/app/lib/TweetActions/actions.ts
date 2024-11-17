@@ -4,7 +4,7 @@ import { auth } from "@/auth"
 import { desc, getTableColumns, inArray, InferSelectModel, lt } from "drizzle-orm"
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { media, tweet, users } from "@/db/schema"
+import { media, tweet, userFollows, users } from "@/db/schema"
 import { db } from "@/index"
 import { eq, sql } from "drizzle-orm"
 import crypto from "crypto";
@@ -58,7 +58,6 @@ export async function getSignedURL(type: string, size: number, checksum: string)
     const signedURL = await getSignedUrl(s3, PutObjctCommand, {
         expiresIn: 60
     })
-
 
     const result = await db.insert(media).values({
         url: signedURL.split("?")[0],
@@ -174,6 +173,41 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
         WHERE "Tweet".user_id = (SELECT users.id FROM users WHERE users.username = ${username})
+        GROUP BY "Tweet".id, 
+             "Tweet".content, 
+             "Tweet".parent_tweet_id, 
+             "Tweet".tweet_type, 
+             "Tweet"."createdAt", 
+             users.name, 
+             users.cover_image_url, 
+             users.username
+        ORDER BY "Tweet"."createdAt" DESC
+        OFFSET ${typeof offset == "string" ? parseInt(offset) : 0}
+        LIMIT 20
+    `);
+
+    return results
+
+}
+
+
+
+export async function pullTweetsFromFollowing(id: string, offset?: string | null) {
+
+    const results = await db.execute(sql`
+        SELECT "Tweet".id, 
+               "Tweet".content, 
+               "Tweet".parent_tweet_id, 
+               "Tweet".tweet_type, 
+               "Tweet"."createdAt", 
+STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
+               users.name, 
+               users.cover_image_url, 
+               users.username
+        FROM "Tweet" 
+        INNER JOIN users ON "Tweet".user_id = users.id 
+        LEFT JOIN media ON media."tweetId" = "Tweet".id 
+        WHERE "Tweet".user_id IN (SELECT "_UserFollows"."B" FROM "_UserFollows" WHERE "_UserFollows"."A"= ${id})
         GROUP BY "Tweet".id, 
              "Tweet".content, 
              "Tweet".parent_tweet_id, 
