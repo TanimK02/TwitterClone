@@ -5,6 +5,7 @@ import searchPic from '@/public/search.svg'
 import messagePic from '@/public/messages.svg'
 import communityPic from '@/public/communities.svg'
 import profilePic from '@/public/profile.svg'
+import settingsPic from '@/public/settings.svg'
 import Image from 'next/image';
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
@@ -39,6 +40,10 @@ export default function NavLinks({ username = "/Home" }: { username?: string }) 
             <Link href={username} >
                 <Image src={profilePic} alt="Profile Button" width={23} height={24} style={{ filter: "invert(0%)" }} />
                 <label>Profile</label>
+            </Link>
+            <Link href="/">
+                <Image src={settingsPic} alt="Settings Button" width={23} height={24} style={{ filter: "invert(0%)" }} />
+                <label>Settings</label>
             </Link>
         </>
     )

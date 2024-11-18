@@ -1,10 +1,10 @@
 "use server"
 
 import { auth } from "@/auth"
-import { desc, getTableColumns, inArray, InferSelectModel, lt } from "drizzle-orm"
+import { and, desc, getTableColumns, inArray, InferSelectModel, like, lt } from "drizzle-orm"
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { media, tweet, userFollows, users } from "@/db/schema"
+import { likes, media, tweet, userFollows, users } from "@/db/schema"
 import { db } from "@/index"
 import { eq, sql } from "drizzle-orm"
 import crypto from "crypto";
@@ -125,7 +125,7 @@ export async function createTweet({ content, mediaIds }: { content: string, medi
 
 }
 
-export async function pullTweets(timestamp: string) {
+export async function pullTweets(timestamp: string, userId: string = "0") {
     const results = await db.execute(sql`
         SELECT "Tweet".id, 
                "Tweet".content, 
@@ -135,7 +135,9 @@ export async function pullTweets(timestamp: string) {
 STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
                users.name, 
                users.cover_image_url, 
-               users.username
+               users.username,
+               (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
+               EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${userId}) AS liked
         FROM "Tweet" 
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
@@ -156,7 +158,7 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
 
 }
 
-export async function pullTweetsFromUser(username: string, offset?: string | null) {
+export async function pullTweetsFromUser(username: string, offset?: string | null, userId: string = "0") {
 
 
     const results = await db.execute(sql`
@@ -168,7 +170,9 @@ export async function pullTweetsFromUser(username: string, offset?: string | nul
 STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
                users.name, 
                users.cover_image_url, 
-               users.username
+               users.username,
+               (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
+               EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${userId}) AS liked
         FROM "Tweet" 
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
@@ -203,7 +207,9 @@ export async function pullTweetsFromFollowing(id: string, offset?: string | null
 STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
                users.name, 
                users.cover_image_url, 
-               users.username
+               users.username,
+               (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
+               EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${id}) AS liked
         FROM "Tweet" 
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
@@ -222,5 +228,57 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
     `);
 
     return results
+
+}
+
+export async function pullLatestUserTweet(id: string) {
+    const results = await db.execute(sql`
+        SELECT "Tweet".id, 
+               "Tweet".content, 
+               "Tweet".parent_tweet_id, 
+               "Tweet".tweet_type, 
+               "Tweet"."createdAt", 
+STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
+               users.name, 
+               users.cover_image_url, 
+               users.username,
+               (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
+        FROM "Tweet" 
+        INNER JOIN users ON "Tweet".user_id = users.id 
+        LEFT JOIN media ON media."tweetId" = "Tweet".id 
+        WHERE "Tweet".user_id = ${id}
+        GROUP BY "Tweet".id, 
+             "Tweet".content, 
+             "Tweet".parent_tweet_id, 
+             "Tweet".tweet_type, 
+             "Tweet"."createdAt", 
+             users.name, 
+             users.cover_image_url, 
+             users.username
+        ORDER BY "Tweet"."createdAt" DESC
+        LIMIT 1
+    `);
+    return results
+}
+
+export async function addLike(id: string) {
+    const session = await auth();
+    if (!session || !session.user) {
+        return false
+    }
+    try {
+        const result = db.select().from(likes).where(and(eq(likes.userId, session.user.id as string), eq(likes.tweetId, id)))
+        if ((await result).length > 0) {
+            await db.delete(likes).where(and(eq(likes.userId, session.user.id as string), eq(likes.tweetId, id)))
+        } else {
+            await db.insert(likes).values({ userId: session.user.id as string, tweetId: id });
+        }
+        return true
+    }
+    catch (error) {
+        console.log(`Like Error : ${error} `)
+        return false
+    }
+
 
 }

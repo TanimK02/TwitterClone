@@ -108,8 +108,8 @@
   font-weight: bold;
 }
 
-.follow-list .info img {
-  filter: invert(100%);
+.info img {
+  border-radius: 50%;
 }
 
 .info {

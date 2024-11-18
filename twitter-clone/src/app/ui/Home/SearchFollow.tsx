@@ -5,7 +5,7 @@ import searchPic from '@/public/search.svg'
 import Image from 'next/image'
 import Link from 'next/link'
 import profile from '@/public/profile.svg'
-import FollowButton from './FollowButton'
+import FollowButton from '@/app/ui/Home/FollowButton'
 import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -32,7 +32,7 @@ export default function SearchFollow() {
             updateResults(data.result);
         })
 
-    }, [])
+    }, [pathname])
 
     const links = []
 
@@ -64,7 +64,7 @@ export default function SearchFollow() {
             </div>
             <div className='follow-container'>
                 <h1>Who to follow</h1>
-                <div className='follow-list'>
+                <div className='follow-list' key={pathname}>
 
                     {[...links]}
 

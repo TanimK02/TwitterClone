@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import styles from '@/app/ui/Feed/Feed.module.css'
 import TweetItem from "@/app/ui/Feed/TweetItem";
 import TopNav from "@/app/ui/Home/NavTop";
-import { pullTweetsFromFollowing } from "@/app/lib/TweetActions/actions";
 type Tweet = {
     id: string;
     content: string;
@@ -15,6 +14,8 @@ type Tweet = {
     name: string;
     cover_image_url?: string;
     username: string;
+    likes: number;
+    liked: boolean;
 };
 export default function Feed({ username }: { username?: string }) {
     const [tweets, updateTweets] = useState<Tweet[]>([]);
@@ -78,6 +79,26 @@ export default function Feed({ username }: { username?: string }) {
             });
     }
 
+    const pullLatestUserTweet = async (erase: boolean = false) => {
+        const data = fetch(`/api/getLatestUserTweet`).then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch tweets');
+            }
+            return response.json(); // Parse the response JSON
+        }).then(data => {
+            if (erase) {
+                updateTweets([...data.results])
+            } else {
+                updateTweets([...data.results, ...tweets,]);
+            }
+
+            // Do something with data.results if your response format is { results: [...] }
+        })
+            .catch(error => {
+                console.error('Error loading tweets:', error);
+            });
+    }
+
     function parseMediaInfo(mediaInfo: string) {
         // Split the mediaInfo string by comma to separate each media entry
         const mediaItems = mediaInfo.split(',');
@@ -114,10 +135,10 @@ export default function Feed({ username }: { username?: string }) {
         <>{!username &&
             <>
                 <TopNav following={following} setFollowing={setFollowing}></TopNav>
-                <TweetPost></TweetPost>
+                <TweetPost callback={pullLatestUserTweet}></TweetPost>
             </>}
             <div className={styles.FeedContainer}>
-                {tweets.map((tweet, index) => <TweetItem key={index} profileUrl={tweet.cover_image_url || ""} name={tweet.name} username={tweet.username} time={tweet.createdAt} content={tweet.content} mediaUrls={tweet.media_info ? parseMediaInfo(tweet.media_info) : []} ></TweetItem>)}
+                {tweets.map((tweet, index) => <TweetItem key={index} liked={tweet.liked} id={tweet.id} likes={tweet.likes} profileUrl={tweet.cover_image_url || ""} name={tweet.name} username={tweet.username} time={tweet.createdAt} content={tweet.content} mediaUrls={tweet.media_info ? parseMediaInfo(tweet.media_info) : []} ></TweetItem>)}
             </div>
         </>
     )

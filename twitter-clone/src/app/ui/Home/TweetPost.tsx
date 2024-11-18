@@ -10,7 +10,7 @@ import close from '@/public/close.svg'
 import { getSignedURL, createTweet } from '@/app/lib/TweetActions/actions'
 import { getOwnProfile } from '@/app/lib/actions'
 
-export default function TweetPost() {
+export default function TweetPost({ callback }: { callback: (erase?: boolean) => Promise<void> }) {
 
     const imgInput = useRef<HTMLInputElement | null>(null);
     const [images, setImages] = useState<{ file: File, previewUrl: string }[]>([]);
@@ -108,6 +108,8 @@ export default function TweetPost() {
             if (text.current) {
                 text.current.value = "";
             }
+            callback();
+
 
         }
         catch (e) {

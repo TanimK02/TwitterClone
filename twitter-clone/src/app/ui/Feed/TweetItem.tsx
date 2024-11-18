@@ -1,3 +1,5 @@
+"use client"
+
 import styles from "@/app/ui/Feed/TweetItem.module.css"
 import Image from "next/image"
 import sasuke from "@/public/sasuke.webp"
@@ -5,12 +7,14 @@ import profile from "@/public/profile.svg"
 import threeDots from "@/public/three-dots.svg"
 import commentPic from "@/public/comment.svg"
 import retweetPic from "@/public/retweet.svg"
-import heart from "@/public/heart.svg"
+import grayHeart from "@/public/heart.svg"
+import redHeart from "@/public/redHeart.svg"
 import stats from "@/public/statsPic.svg"
 import bookmark from "@/public/bookmark.svg"
 import upload from "@/public/upload.svg"
 import Media from "@/app/ui/Feed/Media"
-
+import { addLike } from "@/app/lib/TweetActions/actions"
+import { useState } from "react"
 
 type MediaInfo = {
     id: string;
@@ -18,10 +22,12 @@ type MediaInfo = {
     type: string;
 };
 
-export default function TweetItem({ name = "Billy", username = "Bob James", time = "2024-10-30T12:34:56.123Z", content = "Hello new tweet", mediaUrls, profileUrl = "" }:
-    { name: string, username: string, time: string, content: string, mediaUrls?: MediaInfo[], profileUrl: string }
+export default function TweetItem({ name = "Billy", username = "Bob James", time = "2024-10-30T12:34:56.123Z", content = "Hello new tweet", mediaUrls, profileUrl = "", likes = 0, id, liked = false }:
+    { name: string, username: string, time: string, content: string, mediaUrls?: MediaInfo[], profileUrl: string, likes: number, id: string, liked?: boolean }
 ) {
-
+    const [curLikes, setLikes] = useState<number>(likes);
+    const [heart, setHeart] = useState<any>(liked ? redHeart : grayHeart);
+    const [isLiked, setIsLiked] = useState<boolean>(liked);
     function timeAgo(dateString: string) {
         const now = new Date();
         const inputDate = new Date(dateString);
@@ -64,21 +70,33 @@ export default function TweetItem({ name = "Billy", username = "Bob James", time
         }
     }
 
-
     time = timeAgo(time);
+
+    const handleRedirect = () => {
+        window.location.href = `/${username}`;
+    }
+
+    const changeHeart = () => {
+        const nextIsLiked = !isLiked;
+        setHeart(heart == grayHeart ? redHeart : grayHeart)
+        setIsLiked(!isLiked)
+        setLikes(li => nextIsLiked ? Number(li) + 1 : Number(li) - 1)
+    }
 
     return (
         <>
             <div className={styles.TweetContainer}>
                 <div className={styles.Profile}>
-                    <Image src={profileUrl || sasuke || profile} height={40} width={40} alt="profile picture from tweet"></Image>
+                    <Image onClick={() => { handleRedirect() }} src={profileUrl || profile || sasuke} height={40} width={40} alt="profile picture from tweet" style={{ cursor: "pointer" }}></Image>
                 </div>
                 <div className={styles.ContentContainer}>
                     <div>
                         <div className={styles.ProfileInfo}>
-                            <div className={styles.ProfileNames}>
+
+                            <div className={styles.ProfileNames} onClick={() => { handleRedirect() }} style={{ cursor: "pointer" }}>
                                 <p className={styles.Name}>{name}</p><p className={styles.UserName}>@{username}</p><p className={styles.Point}>•</p><p className={styles.Time}>{time}</p>
                             </div>
+
                             <div className={styles.Options}>
                                 <Image src={threeDots} height={19} width={19} alt="Tweet Options"></Image>
                             </div>
@@ -96,8 +114,15 @@ export default function TweetItem({ name = "Billy", username = "Bob James", time
                             <div className={styles.ImageContainer}>
                                 <Image src={retweetPic} height={20} width={20} alt="Retweet"></Image> <span>0</span>
                             </div>
-                            <div className={styles.ImageContainer}>
-                                <Image src={heart} height={20} width={20} alt="Like the tweet"></Image> <span>0</span>
+                            <div className={styles.ImageContainer} onClick={async () => {
+                                changeHeart()
+                                const result = await addLike(id)
+                                if (!result) {
+                                    changeHeart()
+                                }
+
+                            }}>
+                                <Image src={heart} height={20} width={20} alt="Like the tweet"></Image> <span style={{ color: isLiked ? "#FF69B4" : "rgb(113, 118, 123)" }}>{curLikes}</span>
                             </div>
                             <div className={styles.ImageContainer}>
                                 <Image src={stats} height={20} width={20} alt="Views"></Image> <span>525</span>
