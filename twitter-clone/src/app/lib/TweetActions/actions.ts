@@ -220,8 +220,10 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
                users.username,
                (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
                EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${userId}) AS liked,
-               (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets
-
+               (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets,
+                EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${userId}) AS retweeted,
+                NULL::text as retweeter_username,
+                "Tweet"."createdAt" AS retweet_createdAt
         FROM "Tweet" 
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
@@ -234,7 +236,41 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
              users.name, 
              users.cover_image_url, 
              users.username
-        ORDER BY "Tweet"."createdAt" DESC
+            
+        UNION ALL
+
+        SELECT "Tweet".id, 
+               "Tweet".content, 
+               "Tweet".parent_tweet_id, 
+               "Tweet".tweet_type, 
+               "Tweet"."createdAt", 
+STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
+               users.name, 
+               users.cover_image_url, 
+               users.username,
+               (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
+               EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${userId}) AS liked,
+               (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets,
+                EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${userId}) AS retweeted,
+                retweeter.username as retweeter_username,
+                retweets.created_at AS retweet_createdAt
+        FROM retweets
+        JOIN "Tweet" ON "Tweet".id = retweets.parent_tweet_id
+        JOIN users ON "Tweet".user_id = users.id
+        JOIN users AS retweeter ON retweets.user_id = users.id
+        LEFT JOIN media ON media."tweetId" = "Tweet".id 
+        WHERE "Tweet".user_id = (SELECT users.id FROM users WHERE users.username = ${username})
+        GROUP BY "Tweet".id, 
+             "Tweet".content, 
+             "Tweet".parent_tweet_id, 
+             "Tweet".tweet_type, 
+             "Tweet"."createdAt", 
+             users.name, 
+             users.cover_image_url, 
+             users.username,
+             retweeter.username,
+             retweets.created_at
+        ORDER BY retweet_createdAt DESC
         OFFSET ${typeof offset == "string" ? parseInt(offset) : 0}
         LIMIT 20
     `);
@@ -260,7 +296,9 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
                (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
                EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${id}) AS liked,
                (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets,
-                false AS retweeted,
+               EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${id}) AS retweeted,
+                NULL::text as retweeter_username,
+                "Tweet"."createdAt" AS retweet_createdAt
         FROM "Tweet" 
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
@@ -273,7 +311,42 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
              users.name, 
              users.cover_image_url, 
              users.username
-        ORDER BY "Tweet"."createdAt" DESC
+
+        UNION ALL
+
+        SELECT "Tweet".id, 
+               "Tweet".content, 
+               "Tweet".parent_tweet_id, 
+               "Tweet".tweet_type, 
+               "Tweet"."createdAt", 
+STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
+               users.name, 
+               users.cover_image_url, 
+               users.username,
+               (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
+               EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${id}) AS liked,
+               (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets,
+               EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${id}) AS retweeted,
+                retweeter.username as retweeter_username,
+                retweets.created_at AS retweet_createdAt
+        FROM retweets
+        JOIN "Tweet" ON retweets.parent_tweet_id = "Tweet".id
+        JOIN users ON "Tweet".user_id = users.id 
+        JOIN users as retweeter ON retweets.user_id = users.id
+        LEFT JOIN media ON media."tweetId" = "Tweet".id 
+        WHERE "Tweet".user_id IN (SELECT "_UserFollows"."B" FROM "_UserFollows" WHERE "_UserFollows"."A"= ${id})
+        GROUP BY "Tweet".id, 
+             "Tweet".content, 
+             "Tweet".parent_tweet_id, 
+             "Tweet".tweet_type, 
+             "Tweet"."createdAt", 
+             users.name, 
+             users.cover_image_url, 
+             users.username,
+             retweeter.username,
+             retweets.created_at
+
+        ORDER BY retweet_createdAt DESC
         OFFSET ${typeof offset == "string" ? parseInt(offset) : 0}
         LIMIT 20
     `);

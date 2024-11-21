@@ -24,7 +24,6 @@ export default async function Dashboard({ username }: { username: string }) {
     if (!user) {
         redirect("/Home")
     }
-    console.log(user)
     const cover_image_url = user[0].cover_image_url;
     const response = await checkFollow(user[0].username);
     const following = await response.json();
