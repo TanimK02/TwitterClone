@@ -16,6 +16,9 @@ type Tweet = {
     username: string;
     likes: number;
     liked: boolean;
+    retweets: number;
+    retweeted: boolean;
+    retweeter_username: string;
 };
 export default function Feed({ username }: { username?: string }) {
     const [tweets, updateTweets] = useState<Tweet[]>([]);
@@ -79,18 +82,15 @@ export default function Feed({ username }: { username?: string }) {
             });
     }
 
-    const pullLatestUserTweet = async (erase: boolean = false) => {
+    const pullLatestUserTweet = async () => {
         const data = fetch(`/api/getLatestUserTweet`).then(response => {
             if (!response.ok) {
                 throw new Error('Failed to fetch tweets');
             }
             return response.json(); // Parse the response JSON
         }).then(data => {
-            if (erase) {
-                updateTweets([...data.results])
-            } else {
-                updateTweets([...data.results, ...tweets,]);
-            }
+            updateTweets([...data.results, ...tweets,]);
+
 
             // Do something with data.results if your response format is { results: [...] }
         })
@@ -138,7 +138,7 @@ export default function Feed({ username }: { username?: string }) {
                 <TweetPost callback={pullLatestUserTweet}></TweetPost>
             </>}
             <div className={styles.FeedContainer}>
-                {tweets.map((tweet, index) => <TweetItem key={index} liked={tweet.liked} id={tweet.id} likes={tweet.likes} profileUrl={tweet.cover_image_url || ""} name={tweet.name} username={tweet.username} time={tweet.createdAt} content={tweet.content} mediaUrls={tweet.media_info ? parseMediaInfo(tweet.media_info) : []} ></TweetItem>)}
+                {tweets.map((tweet, index) => <TweetItem key={index} retweeter={tweet.retweeter_username} retweeted={tweet.retweeted} retweets={tweet.retweets} liked={tweet.liked} id={tweet.id} likes={tweet.likes} profileUrl={tweet.cover_image_url || ""} name={tweet.name} username={tweet.username} time={tweet.createdAt} content={tweet.content} mediaUrls={tweet.media_info ? parseMediaInfo(tweet.media_info) : []} ></TweetItem>)}
             </div>
         </>
     )

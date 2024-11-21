@@ -1,10 +1,19 @@
 .TweetContainer {
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+}
+
+.BigContainer {
     width: 100%;
     min-height: 100px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.183);
     display: flex;
-    flex-direction: row;
-    flex-shrink: 0;
+    flex-direction: column;
+}
+
+.retweetFiller {
+    width: 10%;
 }
 
 .Profile {
@@ -55,7 +64,8 @@
 .Point,
 .UserName,
 .Time,
-.ImageContainer span {
+.ImageContainer span,
+.ExtraSpan {
     color: rgb(113, 118, 123);
 }
 

@@ -1,10 +1,10 @@
 "use server"
 
 import { auth } from "@/auth"
-import { and, desc, getTableColumns, inArray, InferSelectModel, like, lt } from "drizzle-orm"
+import { and, inArray, InferSelectModel, } from "drizzle-orm"
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { likes, media, tweet, userFollows, users } from "@/db/schema"
+import { likes, media, tweet, retweets } from "@/db/schema"
 import { db } from "@/index"
 import { eq, sql } from "drizzle-orm"
 import crypto from "crypto";
@@ -116,9 +116,7 @@ export async function createTweet({ content, mediaIds }: { content: string, medi
     }
     finally {
         if (post) {
-            console.log(post)
             revalidatePath("/Home")
-            redirect("/Home")
         }
     }
 
@@ -126,32 +124,81 @@ export async function createTweet({ content, mediaIds }: { content: string, medi
 }
 
 export async function pullTweets(timestamp: string, userId: string = "0") {
-    const results = await db.execute(sql`
-        SELECT "Tweet".id, 
-               "Tweet".content, 
-               "Tweet".parent_tweet_id, 
-               "Tweet".tweet_type, 
-               "Tweet"."createdAt", 
-STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
-               users.name, 
-               users.cover_image_url, 
-               users.username,
-               (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
-               EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${userId}) AS liked
-        FROM "Tweet" 
-        INNER JOIN users ON "Tweet".user_id = users.id 
-        LEFT JOIN media ON media."tweetId" = "Tweet".id 
-        WHERE "Tweet"."createdAt" < ${timestamp}
-        GROUP BY "Tweet".id, 
-             "Tweet".content, 
-             "Tweet".parent_tweet_id, 
-             "Tweet".tweet_type, 
-             "Tweet"."createdAt", 
-             users.name, 
-             users.cover_image_url, 
-             users.username
-        ORDER BY "Tweet"."createdAt" DESC
-        LIMIT 20
+
+    const results = await db.execute(sql`SELECT 
+    "Tweet".id,
+    "Tweet".content,
+    "Tweet"."createdAt",
+    "Tweet".tweet_type, 
+    "Tweet".parent_tweet_id,
+    users.id AS user_id,
+    users.username,
+    users.name,
+    users.cover_image_url,
+    STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
+    (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id) AS likes,
+    EXISTS (SELECT 1 FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${userId}) AS liked,
+    (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) AS retweets,
+    EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${userId}) AS retweeted,
+    NULL::text AS retweeter_username,
+    "Tweet"."createdAt" AS retweet_createdAt
+FROM "Tweet"
+LEFT JOIN media ON media."tweetId" = "Tweet".id
+JOIN users ON "Tweet".user_id = users.id
+WHERE "Tweet"."createdAt" < ${timestamp}
+GROUP BY 
+    "Tweet".id,
+    "Tweet".content,
+    "Tweet"."createdAt",
+    "Tweet".tweet_type,
+    "Tweet".parent_tweet_id,
+    users.id,
+    users.username,
+    users.name,
+    users.cover_image_url
+
+UNION ALL
+
+SELECT 
+    "Tweet".id,
+    "Tweet".content,
+    "Tweet"."createdAt",
+    "Tweet".tweet_type, 
+    "Tweet".parent_tweet_id,
+    original_users.id AS user_id,
+    original_users.username,
+    original_users.name,
+    original_users.cover_image_url,
+    STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
+    (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id) AS likes,
+    EXISTS (SELECT 1 FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${userId}) AS liked,
+    (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) AS retweets,
+    EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${userId}) AS retweeted,
+    retweeter.username AS retweeter_username,
+    retweets.created_at AS retweet_createdAt -- Keep this as the last column
+FROM retweets
+JOIN "Tweet" ON retweets.parent_tweet_id = "Tweet".id
+LEFT JOIN media ON media."tweetId" = "Tweet".id
+JOIN users AS original_users ON "Tweet".user_id = original_users.id
+JOIN users AS retweeter ON retweets.user_id = retweeter.id
+WHERE retweets.created_at < ${timestamp}
+GROUP BY 
+    "Tweet".id,
+    "Tweet".content,
+    "Tweet"."createdAt",
+    "Tweet".tweet_type,
+    "Tweet".parent_tweet_id,
+    original_users.id,
+    original_users.username,
+    original_users.name,
+    original_users.cover_image_url,
+    retweeter.username,
+    retweets.created_at
+
+ORDER BY retweet_createdAt DESC
+LIMIT 20;
+
+
     `);
 
     return results
@@ -172,7 +219,9 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
                users.cover_image_url, 
                users.username,
                (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
-               EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${userId}) AS liked
+               EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${userId}) AS liked,
+               (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets
+
         FROM "Tweet" 
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
@@ -209,7 +258,9 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
                users.cover_image_url, 
                users.username,
                (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
-               EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${id}) AS liked
+               EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${id}) AS liked,
+               (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets,
+                false AS retweeted,
         FROM "Tweet" 
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
@@ -242,7 +293,10 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
                users.name, 
                users.cover_image_url, 
                users.username,
+               null AS retweeter,
+               false AS retweeted,
                (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
+               (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets
         FROM "Tweet" 
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
@@ -281,4 +335,36 @@ export async function addLike(id: string) {
     }
 
 
+}
+
+export async function retweet(id: string) {
+    const session = await auth();
+    if (!session || !session.user) {
+        return false; // Ensure session and user are defined
+    }
+
+    try {
+
+        const originalTweet = await db.select().from(tweet).where(eq(tweet.id, id));
+        if (originalTweet.length === 0) {
+            throw new Error("Original tweet not found");
+        }
+
+        const check = await db.select().from(retweets).where(and(eq(retweets.parentTweetId, id), eq(retweets.userId, session.user.id as string)));
+        if (check.length > 0) {
+            await db.delete(retweets).where(and(eq(retweets.parentTweetId, check[0].parentTweetId), eq(retweets.userId, check[0].userId)));
+        } else {
+            await db.insert(retweets).values({
+                userId: session.user!.id as string,
+                parentTweetId: originalTweet[0].id,
+            });
+        }
+
+
+
+        return true;
+    } catch (error) {
+        console.error("Transaction failed:", error);
+        return false;
+    }
 }

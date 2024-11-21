@@ -109,7 +109,6 @@ export const tweet = pgTable("Tweet", {
     parentTweetId: text("parent_tweet_id"),
     createdAt: timestamp({ precision: 3, mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
     tweetType: tweetType("tweet_type").default("DEFAULT").notNull(),
-    profilePicture: boolean("profile_picture").default(false).notNull(),
 },
     (table) => {
         return {
@@ -139,10 +138,7 @@ export const users = pgTable("users", {
     coverImageUrl: text("cover_image_url"),
     createdAt: timestamp("created_at", { mode: "date" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-},
-    (table) => ({
-        emailUnique: primaryKey(table.email), // Example for email uniqueness constraint
-    })
+}
 );
 
 export const hashtagsToTweet = pgTable("_HashtagsToTweet", {
@@ -239,3 +235,25 @@ export const accounts = pgTable("account", {
         accountProviderProviderAccountIdPk: primaryKey(table.provider, table.providerAccountId), // Composite key
     })
 );
+
+export const retweets = pgTable("retweets", {
+    id: text().primaryKey().$defaultFn(() => crypto.randomUUID()).notNull(),
+    userId: text("user_id").notNull(),
+    parentTweetId: text("parent_tweet_id").notNull(),
+    createdAt: timestamp("created_at", { precision: 3, mode: "string" }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+
+},
+    (table) => {
+        return {
+            retweetUserIdFkey: foreignKey({
+                columns: [table.userId],
+                foreignColumns: [users.id],
+                name: "retweets_user_id_fkey",
+            }).onUpdate("cascade").onDelete("restrict"),
+            retweetParentTweetIdFkey: foreignKey({
+                columns: [table.parentTweetId],
+                foreignColumns: [tweet.id],
+                name: "retweets_parent_tweet_id_fkey",
+            }).onUpdate("cascade").onDelete("cascade"),
+        };
+    });
