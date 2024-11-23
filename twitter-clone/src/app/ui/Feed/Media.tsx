@@ -17,7 +17,7 @@ export default function Media({ media }: { media?: MediaInfo[] }) {
     if (!media) { return (<></>) }
     const [open, setOpen] = useState(false);
 
-    return (<>
+    return (
         <div className={styles.MediaContainer}>
             <div className={styles.Thumbnail} onClick={() => { setOpen(true) }}>
                 {media[0].type.startsWith("image") &&
@@ -42,5 +42,5 @@ export default function Media({ media }: { media?: MediaInfo[] }) {
             </div>
             <Lightbox plugins={[Video]} open={open} close={() => { setOpen(false) }} slides={media.map((mediaObs) => { return (mediaObs.type.startsWith("image") ? { src: mediaObs.url } : { type: "video", sources: [{ src: mediaObs.url, type: mediaObs.type }] }) })}></Lightbox>
         </div>
-    </>)
+    )
 }

@@ -8,7 +8,6 @@ import { likes, media, tweet, retweets } from "@/db/schema"
 import { db } from "@/index"
 import { eq, sql } from "drizzle-orm"
 import crypto from "crypto";
-import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 const generateFileName = (bytes = 32) => crypto.randomBytes(bytes).toString("hex");
 
@@ -385,6 +384,38 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
         ORDER BY "Tweet"."createdAt" DESC
         LIMIT 1
     `);
+    return results
+}
+
+export async function pullTweetById(userId: string, id: string) {
+    const results = await db.execute(sql` SELECT "Tweet".id, 
+               "Tweet".content, 
+               "Tweet".parent_tweet_id, 
+               "Tweet".tweet_type, 
+               "Tweet"."createdAt", 
+STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
+               users.name, 
+               users.cover_image_url, 
+               users.username,
+               (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
+               EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${userId}) AS liked,
+               (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets,
+                EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${userId}) AS retweeted,
+                NULL::text as retweeter_username,
+                "Tweet"."createdAt" AS retweet_createdAt
+        FROM "Tweet" 
+        INNER JOIN users ON "Tweet".user_id = users.id 
+        LEFT JOIN media ON media."tweetId" = "Tweet".id 
+        WHERE "Tweet".id = ${id}
+        GROUP BY "Tweet".id, 
+             "Tweet".content, 
+             "Tweet".parent_tweet_id, 
+             "Tweet".tweet_type, 
+             "Tweet"."createdAt", 
+             users.name, 
+             users.cover_image_url, 
+             users.username`);
+
     return results
 }
 
