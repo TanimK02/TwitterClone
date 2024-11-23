@@ -15,6 +15,7 @@ import Media from "@/app/ui/Feed/Media"
 import greenRetweet from "@/public/retweeted.svg"
 import { addLike, retweet } from "@/app/lib/TweetActions/actions"
 import { useState } from "react"
+import CommentPost from "@/app/ui/TweetFocus/CommentPost"
 
 type MediaInfo = {
     id: string;
@@ -101,73 +102,76 @@ export default function FocusedTweet({ name = "Billy", username = "Bob James", t
 
     return (
         <>
-            <div className={styles.BigContainer}>
-                {retweeter && <div style={{ display: "flex", alignItems: "center", width: "100%" }} >
-                    <div className={styles.retweetFiller}>
-                    </div>
-                    <Image src={retweetPic} alt="click to goto retweeter profile" height={14} width={14}></Image>
-                    <p className={styles.ExtraSpan} style={{ font: "0.7rem", marginTop: "5px", cursor: "pointer" }} onClick={() => {
-                        window.location.href = `/${retweeter}`;
-                    }} >{retweeter} retweeted</p>
-                </div>}
-                <div className={styles.TweetContainer}>
-                    <div className={styles.ContentContainer}>
-                        <div className={styles.InnerContentContainer}>
+            <div className={styles.Overall} style={{ overflowY: "scroll", msOverflowStyle: "none", scrollbarWidth: "none" }}>
+                <div className={styles.BigContainer}>
+                    {retweeter && <div style={{ display: "flex", alignItems: "center", width: "100%" }} >
+                        <div className={styles.retweetFiller}>
+                        </div>
+                        <Image src={retweetPic} alt="click to goto retweeter profile" height={14} width={14}></Image>
+                        <p className={styles.ExtraSpan} style={{ font: "0.7rem", marginTop: "5px", cursor: "pointer" }} onClick={() => {
+                            window.location.href = `/${retweeter}`;
+                        }} >{retweeter} retweeted</p>
+                    </div>}
+                    <div className={styles.TweetContainer}>
+                        <div className={styles.ContentContainer}>
+                            <div className={styles.InnerContentContainer}>
 
-                            <div className={styles.ProfileInfo}>
-                                <div className={styles.LeftProfileInfo}>
-                                    <Image onClick={() => { handleRedirect() }} src={profileUrl || profile || sasuke} height={40} width={40} alt="profile picture from tweet" style={{ cursor: "pointer" }}></Image>
+                                <div className={styles.ProfileInfo}>
+                                    <div className={styles.LeftProfileInfo}>
+                                        <Image onClick={() => { handleRedirect() }} src={profileUrl || profile || sasuke} height={40} width={40} alt="profile picture from tweet" style={{ cursor: "pointer" }}></Image>
 
-                                    <div onClick={() => { handleRedirect() }} style={{ cursor: "pointer" }}>
+                                        <div onClick={() => { handleRedirect() }} style={{ cursor: "pointer" }}>
 
-                                        <p className={styles.Name}>{name}</p><p className={styles.UserName}>@{username}</p>
+                                            <p className={styles.Name}>{name}</p><p className={styles.UserName}>@{username}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.Options}>
+                                        <Image src={threeDots} height={19} width={19} alt="Tweet Options"></Image>
                                     </div>
                                 </div>
-
-                                <div className={styles.Options}>
-                                    <Image src={threeDots} height={19} width={19} alt="Tweet Options"></Image>
+                                <div className={styles.ContentText}>
+                                    {content}
                                 </div>
+                                {mediaUrls && <Media media={mediaUrls}></Media>}
+                                <p className={styles.Time}>{time}</p>
                             </div>
-                            <div className={styles.ContentText}>
-                                {content}
-                            </div>
-                            {mediaUrls && <Media media={mediaUrls}></Media>}
-                            <p className={styles.Time}>{time}</p>
-                        </div>
-                        <div className={styles.FooterContainer}>
-                            <div className={styles.CRHS}>
-                                <div className={styles.ImageContainer}>
-                                    <Image src={commentPic} height={23} width={23} alt="open comments and comment"></Image> <span>0</span>
-                                </div>
-                                <div className={styles.ImageContainer} onClick={async () => {
-                                    changeRetweet()
-                                    const result = retweet(id)
-                                    if (!result) {
+                            <div className={styles.FooterContainer}>
+                                <div className={styles.CRHS}>
+                                    <div className={styles.ImageContainer}>
+                                        <Image src={commentPic} height={23} width={23} alt="open comments and comment"></Image> <span>0</span>
+                                    </div>
+                                    <div className={styles.ImageContainer} onClick={async () => {
                                         changeRetweet()
-                                    }
-                                }}>
-                                    <Image src={retColor} height={23} width={23} alt="Retweet"></Image> <span style={{ color: isRetweeted ? "#90EE90" : "rgb(113, 118, 123)" }}>{curRetweets}</span>
-                                </div>
-                                <div className={styles.ImageContainer} onClick={async () => {
-                                    changeHeart()
-                                    const result = await addLike(id)
-                                    if (!result) {
+                                        const result = retweet(id)
+                                        if (!result) {
+                                            changeRetweet()
+                                        }
+                                    }}>
+                                        <Image src={retColor} height={23} width={23} alt="Retweet"></Image> <span style={{ color: isRetweeted ? "#90EE90" : "rgb(113, 118, 123)" }}>{curRetweets}</span>
+                                    </div>
+                                    <div className={styles.ImageContainer} onClick={async () => {
                                         changeHeart()
-                                    }
+                                        const result = await addLike(id)
+                                        if (!result) {
+                                            changeHeart()
+                                        }
 
-                                }}>
-                                    <Image src={heart} height={23} width={23} alt="Like the tweet"></Image> <span style={{ color: isLiked ? "#FF69B4" : "rgb(113, 118, 123)" }}>{curLikes}</span>
-                                </div>
-                                <div className={styles.ImageContainer}>
-                                    <Image src={bookmark} height={23} width={23} alt="Save"></Image>
-                                </div>
-                                <div className={styles.ImageContainer}>
-                                    <Image src={upload} height={23} width={23} alt="Share"></Image>
+                                    }}>
+                                        <Image src={heart} height={23} width={23} alt="Like the tweet"></Image> <span style={{ color: isLiked ? "#FF69B4" : "rgb(113, 118, 123)" }}>{curLikes}</span>
+                                    </div>
+                                    <div className={styles.ImageContainer}>
+                                        <Image src={bookmark} height={23} width={23} alt="Save"></Image>
+                                    </div>
+                                    <div className={styles.ImageContainer}>
+                                        <Image src={upload} height={23} width={23} alt="Share"></Image>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                <CommentPost user={username} ></CommentPost>
             </div>
         </>)
 }

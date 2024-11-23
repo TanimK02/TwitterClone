@@ -99,7 +99,9 @@ export default function TweetItem({ name = "Billy", username = "Bob James", time
 
     return (
         <>
-            <div className={styles.BigContainer}>
+            <div className={styles.BigContainer} onClick={() => {
+                window.location.href = `http://localhost:3000/${username}/tweet/${id}`
+            }} style={{ cursor: "pointer" }}>
                 {retweeter && <div style={{ display: "flex", alignItems: "center", width: "100%" }} >
                     <div className={styles.retweetFiller}>
                     </div>
@@ -110,14 +112,20 @@ export default function TweetItem({ name = "Billy", username = "Bob James", time
                 </div>}
                 <div className={styles.TweetContainer}>
                     <div className={styles.Profile}>
-                        <Image onClick={() => { handleRedirect() }} src={profileUrl || profile || sasuke} height={40} width={40} alt="profile picture from tweet" style={{ cursor: "pointer" }}></Image>
+                        <Image onClick={(event) => {
+                            event.stopPropagation()
+                            handleRedirect()
+                        }} src={profileUrl || profile || sasuke} height={40} width={40} alt="profile picture from tweet" style={{ cursor: "pointer" }}></Image>
                     </div>
                     <div className={styles.ContentContainer}>
                         <div>
 
                             <div className={styles.ProfileInfo}>
 
-                                <div className={styles.ProfileNames} onClick={() => { handleRedirect() }} style={{ cursor: "pointer" }}>
+                                <div className={styles.ProfileNames} onClick={(event) => {
+                                    event.stopPropagation()
+                                    handleRedirect()
+                                }} style={{ cursor: "pointer" }}>
 
                                     <p className={styles.Name}>{name}</p><p className={styles.UserName}>@{username}</p><p className={styles.Point}>•</p><p className={styles.Time}>{time}</p>
                                 </div>
@@ -136,7 +144,8 @@ export default function TweetItem({ name = "Billy", username = "Bob James", time
                                 <div className={styles.ImageContainer}>
                                     <Image src={commentPic} height={20} width={20} alt="open comments and comment"></Image> <span>0</span>
                                 </div>
-                                <div className={styles.ImageContainer} onClick={async () => {
+                                <div className={styles.ImageContainer} onClick={async (event) => {
+                                    event.stopPropagation()
                                     changeRetweet()
                                     const result = retweet(id)
                                     if (!result) {
@@ -145,7 +154,8 @@ export default function TweetItem({ name = "Billy", username = "Bob James", time
                                 }}>
                                     <Image src={retColor} height={20} width={20} alt="Retweet"></Image> <span style={{ color: isRetweeted ? "#90EE90" : "rgb(113, 118, 123)" }}>{curRetweets}</span>
                                 </div>
-                                <div className={styles.ImageContainer} onClick={async () => {
+                                <div className={styles.ImageContainer} onClick={async (event) => {
+                                    event.stopPropagation()
                                     changeHeart()
                                     const result = await addLike(id)
                                     if (!result) {
