@@ -1,7 +1,7 @@
 import { pgTable, uniqueIndex, serial, varchar, foreignKey, text, boolean, timestamp, index, unique, integer, primaryKey, pgEnum } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
-export const tweetType = pgEnum("TweetType", ["DEFAULT", "REPLY", "RETWEET", "QUOTE"]);
+export const tweetType = pgEnum("TweetType", ["DEFAULT", "REPLY", "QUOTE"]);
 
 export const hashtags = pgTable("Hashtags", {
     id: serial().primaryKey().notNull(),
