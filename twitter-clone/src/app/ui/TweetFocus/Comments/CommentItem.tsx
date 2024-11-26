@@ -1,6 +1,6 @@
 "use client"
 
-import styles from "@/app/ui/Feed/TweetItem.module.css"
+import styles from "@/app/ui/TweetFocus/Comments/CommentItem.module.css"
 import Image from "next/image"
 import sasuke from "@/public/sasuke.webp"
 import profile from "@/public/profile.svg"
@@ -23,7 +23,7 @@ type MediaInfo = {
     type: string;
 };
 
-export default function TweetItem({ name = "Billy", username = "Bob James", time = "2024-10-30T12:34:56.123Z", content = "Hello new tweet", mediaUrls, profileUrl = "", likes = 0, id, liked = false, retweets = 0,
+export default function CommentItem({ name = "Billy", username = "Bob James", time = "2024-10-30T12:34:56.123Z", content = "Hello new tweet", mediaUrls, profileUrl = "", likes = 0, id, liked = false, retweets = 0,
     retweeted = false, retweeter = ""
 }:
     { name: string, username: string, time: string, content: string, mediaUrls?: MediaInfo[], profileUrl: string, likes: number, id: string, liked?: boolean, retweets: number, retweeted: boolean, retweeter: null | string }

@@ -1,0 +1,109 @@
+.TweetContainer {
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+}
+
+.BigContainer {
+    width: 100%;
+    min-height: 100px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.183);
+    display: flex;
+    flex-direction: column;
+}
+
+.retweetFiller {
+    width: 10%;
+}
+
+.Profile {
+    flex-basis: 10%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 8px;
+    justify-content: flex-start;
+    align-items: center;
+
+}
+
+.Profile img {
+    border-radius: 9999px;
+}
+
+.ContentContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-basis: 88%;
+    gap: 20px;
+}
+
+.ProfileInfo {
+    display: flex;
+}
+
+.ProfileNames {
+    display: flex;
+    align-items: center;
+    height: fit-content;
+    flex-basis: 95%;
+    height: 2rem;
+    gap: 5px;
+
+}
+
+.Options {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-basis: 5%;
+    height: 2rem;
+}
+
+.Point,
+.UserName,
+.Time,
+.ImageContainer span,
+.ExtraSpan {
+    color: rgb(113, 118, 123);
+}
+
+.Name {
+    font-weight: 700;
+}
+
+.FooterContainer {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.CRHS {
+    flex-basis: 75%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.ImageContainer {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.ImageContainer span {
+    font-size: 0.8rem;
+}
+
+.SS {
+    flex-basis: 15%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 5px;
+}
+
+.ContentText {
+    height: min-content;
+}

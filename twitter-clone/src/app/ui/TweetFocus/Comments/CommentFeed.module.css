@@ -1,0 +1,36 @@
+.FeedContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+.Thumbnail {
+    margin-top: 0.5rem;
+
+}
+
+.Thumbnail img {
+    width: 100%;
+    max-width: 555px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.183);
+}
+
+.ThumbnailDiv video {
+    width: 100%;
+    max-width: 555px;
+}
+
+.ThumbnailDiv {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.183);
+}
+
+.MediaContainer {
+    width: 100%;
+    height: fit-content;
+    display: flex;
+    align-items: center;
+}

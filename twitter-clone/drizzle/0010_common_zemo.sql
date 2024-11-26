@@ -1,0 +1,1 @@
+ALTER TABLE "Tweet" RENAME COLUMN "TweetType" TO "tweet_type";

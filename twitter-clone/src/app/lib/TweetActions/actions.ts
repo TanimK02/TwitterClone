@@ -70,12 +70,11 @@ export async function getSignedURL(type: string, size: number, checksum: string)
 
 type MediaRes = InferSelectModel<typeof media>
 type Tweet = InferSelectModel<typeof tweet>
-type User = InferSelectModel<typeof users>
 export async function createTweet({ content, mediaIds }: { content: string, mediaIds?: string[] }) {
-
     const session = await auth();
     if (!session || !session.user) {
         return { failure: "No user." }
+
     }
 
     let post: Tweet | null = null;
@@ -122,6 +121,9 @@ export async function createTweet({ content, mediaIds }: { content: string, medi
 
 
 }
+
+type User = InferSelectModel<typeof users>
+
 
 export async function createReply({ parentId, content, mediaIds }: { parentId: string, content: string, mediaIds?: string[] }) {
 
@@ -206,7 +208,7 @@ export async function pullTweets(timestamp: string, userId: string = "0") {
 FROM "Tweet"
 LEFT JOIN media ON media."tweetId" = "Tweet".id
 JOIN users ON "Tweet".user_id = users.id
-WHERE "Tweet"."createdAt" < ${timestamp} AND "Tweet".tweet_type != "REPLY"
+WHERE "Tweet"."createdAt" < ${timestamp} AND "Tweet".tweet_type != 'REPLY'
 GROUP BY 
     "Tweet".id,
     "Tweet".content,
@@ -242,7 +244,7 @@ JOIN "Tweet" ON retweets.parent_tweet_id = "Tweet".id
 LEFT JOIN media ON media."tweetId" = "Tweet".id
 JOIN users AS original_users ON "Tweet".user_id = original_users.id
 JOIN users AS retweeter ON retweets.user_id = retweeter.id
-WHERE retweets.created_at < ${timestamp} AND "Tweet".tweet_type != "REPLY"
+WHERE retweets.created_at < ${timestamp} AND "Tweet".tweet_type != 'REPLY'
 GROUP BY 
     "Tweet".id,
     "Tweet".content,
@@ -288,7 +290,7 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
         FROM "Tweet" 
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
-        WHERE "Tweet".user_id = (SELECT users.id FROM users WHERE users.username = ${username}) AND "Tweet".tweet_type != "REPLY"
+        WHERE "Tweet".user_id = (SELECT users.id FROM users WHERE users.username = ${username}) AND "Tweet".tweet_type != 'REPLY'
         GROUP BY "Tweet".id, 
              "Tweet".content, 
              "Tweet".parent_tweet_id, 
@@ -320,7 +322,7 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
         JOIN users ON "Tweet".user_id = users.id
         JOIN users AS retweeter ON retweets.user_id = users.id
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
-        WHERE "Tweet".user_id = (SELECT users.id FROM users WHERE users.username = ${username}) AND "Tweet".tweet_type != "REPLY"
+        WHERE "Tweet".user_id = (SELECT users.id FROM users WHERE users.username = ${username}) AND "Tweet".tweet_type != 'REPLY'
         GROUP BY "Tweet".id, 
              "Tweet".content, 
              "Tweet".parent_tweet_id, 
@@ -363,7 +365,7 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
         FROM "Tweet" 
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
-        WHERE "Tweet".user_id IN (SELECT "_UserFollows"."B" FROM "_UserFollows" WHERE "_UserFollows"."A"= ${id}) AND "Tweet".tweet_type != "REPLY"
+        WHERE "Tweet".user_id IN (SELECT "_UserFollows"."B" FROM "_UserFollows" WHERE "_UserFollows"."A"= ${id}) AND "Tweet".tweet_type != 'REPLY'
         GROUP BY "Tweet".id, 
              "Tweet".content, 
              "Tweet".parent_tweet_id, 
@@ -395,7 +397,7 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
         JOIN users ON "Tweet".user_id = users.id 
         JOIN users as retweeter ON retweets.user_id = users.id
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
-        WHERE "Tweet".user_id IN (SELECT "_UserFollows"."B" FROM "_UserFollows" WHERE "_UserFollows"."A"= ${id}) AND "Tweet".tweet_type != "REPLY"
+        WHERE "Tweet".user_id IN (SELECT "_UserFollows"."B" FROM "_UserFollows" WHERE "_UserFollows"."A"= ${id}) AND "Tweet".tweet_type != 'REPLY'
         GROUP BY "Tweet".id, 
              "Tweet".content, 
              "Tweet".parent_tweet_id, 
@@ -505,7 +507,7 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
  INNER JOIN users ON "Tweet".user_id = users.id
  INNER JOIN users ON "Tweet".user_id = (SELECT (user_id) FROM "Tweet" WHERE "Tweet".id = ${id}) AS replyingTo
  LEFT JOIN media ON media."tweetId" = "Tweet".id 
- WHERE "Tweet".Parentid = ${id} AND "Tweet".tweet_type = "REPLY"
+ WHERE "Tweet".Parentid = ${id} AND "Tweet".tweet_type = 'REPLY'
  GROUP BY "Tweet".id, 
       "Tweet".content, 
       "Tweet".parent_tweet_id, 

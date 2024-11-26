@@ -15,7 +15,7 @@ import Media from "@/app/ui/Feed/Media"
 import greenRetweet from "@/public/retweeted.svg"
 import { addLike, retweet } from "@/app/lib/TweetActions/actions"
 import { useState } from "react"
-import CommentPost from "@/app/ui/TweetFocus/CommentPost"
+import CommentFeed from "@/app/ui/TweetFocus/Comments/CommentFeed"
 
 type MediaInfo = {
     id: string;
@@ -48,36 +48,20 @@ export default function FocusedTweet({ name = "Billy", username = "Bob James", t
         const localOffset = now.getTimezoneOffset() * 60 * 1000; // in milliseconds
         const adjustedInputDate = new Date(inputDate.getTime() - localOffset);
 
-        // Calculate the difference in milliseconds between local 'now' and adjusted input date
-        const diffMs = now.getTime() - adjustedInputDate.getTime();
+        const timeString = adjustedInputDate.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+        });
 
-        // Convert milliseconds to seconds, minutes, and hours
-        const diffSeconds = Math.floor(diffMs / 1000);
-        const diffMinutes = Math.floor(diffSeconds / 60);
-        const diffHours = Math.floor(diffMinutes / 60);
+        const retdateString = new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        }).format(adjustedInputDate);
 
-        if (diffSeconds < 60) {
-            return `${diffSeconds}s`;
-        } else if (diffMinutes < 60) {
-            return `${diffMinutes}m`;
-        } else if (diffHours < 24) {
-            return `${diffHours}h`;
-        } else {
-            // Format the date and time for anything more than a day
-            const timeString = adjustedInputDate.toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true,
-            });
+        return `${timeString} · ${retdateString}`;
 
-            const dateString = new Intl.DateTimeFormat('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-            }).format(adjustedInputDate);
-
-            return `${timeString} · ${dateString}`;
-        }
     }
 
     time = timeAgo(time);
@@ -171,7 +155,7 @@ export default function FocusedTweet({ name = "Billy", username = "Bob James", t
                         </div>
                     </div>
                 </div>
-                <CommentPost user={username} ></CommentPost>
+                <CommentFeed parentId={id} user={username} ></CommentFeed>
             </div>
         </>)
 }

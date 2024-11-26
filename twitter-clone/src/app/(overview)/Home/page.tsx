@@ -1,6 +1,5 @@
 
 import "@/app/(overview)/Home/home.css"
-import TopNav from '@/app/ui/Home/NavTop';
 import { auth } from "@/auth";
 import UserName from "@/app/ui/Home/UserName";
 import { getUserById } from "@/app/lib/actions";

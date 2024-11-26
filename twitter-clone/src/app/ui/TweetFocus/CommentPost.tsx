@@ -7,10 +7,10 @@ import gif from '@/public/gif.svg'
 import imagePic from '@/public/image.svg'
 import { useEffect, useRef, useState } from 'react'
 import close from '@/public/close.svg'
-import { getSignedURL, createTweet } from '@/app/lib/TweetActions/actions'
+import { getSignedURL, createReply } from '@/app/lib/TweetActions/actions'
 import { getOwnProfile } from '@/app/lib/actions'
 
-export default function CommentPost({ user = "Home", callback }: { user: string, callback?: (erase?: boolean) => Promise<void> }) {
+export default function CommentPost({ user = "Home", parentId, callback }: { user: string, parentId: string, callback?: (erase?: boolean) => Promise<void> }) {
 
     const imgInput = useRef<HTMLInputElement | null>(null);
     const [images, setImages] = useState<{ file: File, previewUrl: string }[]>([]);
@@ -104,7 +104,7 @@ export default function CommentPost({ user = "Home", callback }: { user: string,
                 mediaIds.push(mediaId)
 
             }
-            await createTweet({ content, mediaIds })
+            await createReply({ parentId, content, mediaIds })
             setImages([])
             if (text.current) {
                 text.current.value = "";
