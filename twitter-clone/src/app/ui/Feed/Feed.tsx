@@ -19,6 +19,7 @@ type Tweet = {
     retweets: number;
     retweeted: boolean;
     retweeter_username: string;
+    comments: number;
 };
 export default function Feed({ username }: { username?: string }) {
     const [tweets, updateTweets] = useState<Tweet[]>([]);
@@ -138,7 +139,7 @@ export default function Feed({ username }: { username?: string }) {
                 <TweetPost callback={pullLatestUserTweet}></TweetPost>
             </>}
             <div className={styles.FeedContainer}>
-                {tweets.map((tweet, index) => <TweetItem key={index} retweeter={tweet.retweeter_username} retweeted={tweet.retweeted} retweets={tweet.retweets} liked={tweet.liked} id={tweet.id} likes={tweet.likes} profileUrl={tweet.cover_image_url || ""} name={tweet.name} username={tweet.username} time={tweet.createdAt} content={tweet.content} mediaUrls={tweet.media_info ? parseMediaInfo(tweet.media_info) : []} ></TweetItem>)}
+                {tweets.map((tweet, index) => <TweetItem key={index} comments={tweet.comments} replyingTo={null} retweeter={tweet.retweeter_username} retweeted={tweet.retweeted} retweets={tweet.retweets} liked={tweet.liked} id={tweet.id} likes={tweet.likes} profileUrl={tweet.cover_image_url || ""} name={tweet.name} username={tweet.username} time={tweet.createdAt} content={tweet.content} mediaUrls={tweet.media_info ? parseMediaInfo(tweet.media_info) : []} ></TweetItem>)}
             </div>
         </>
     )

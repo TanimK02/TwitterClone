@@ -124,7 +124,6 @@ export async function createTweet({ content, mediaIds }: { content: string, medi
 
 type User = InferSelectModel<typeof users>
 
-
 export async function createReply({ parentId, content, mediaIds }: { parentId: string, content: string, mediaIds?: string[] }) {
 
     const session = await auth();
@@ -133,10 +132,10 @@ export async function createReply({ parentId, content, mediaIds }: { parentId: s
     }
 
     let post: Tweet | null = null;
-    let parentUser: User[] | null = null;
+    let parentUser: any[] | null = null;
     try {
         const parentTweet = db.select().from(tweet).where(eq(tweet.id, parentId)).as('sq')
-        parentUser = await db.select().from(users).where(eq(users.id, parentTweet.userId))
+        parentUser = await db.select().from(users).leftJoin(parentTweet, eq(users.id, parentTweet.id))
 
         if (!parentUser || parentUser.length == 0) {
             return { failure: "Parent id missing" };
@@ -168,12 +167,15 @@ export async function createReply({ parentId, content, mediaIds }: { parentId: s
             await db.insert(tweet).values({
                 userId: session.user.id as string,
                 content: content,
+                parentTweetId: parentId,
+                tweetType: "REPLY"
 
             });
         }
 
     }
     catch (error) {
+        console.log(error)
         return { failure: "An error occurred while creating the reply." };
     }
     finally {
@@ -204,7 +206,8 @@ export async function pullTweets(timestamp: string, userId: string = "0") {
     (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) AS retweets,
     EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${userId}) AS retweeted,
     NULL::text AS retweeter_username,
-    "Tweet"."createdAt" AS retweet_createdAt
+    "Tweet"."createdAt" AS retweet_createdAt,
+    (SELECT COUNT(*) FROM "Tweet" WHERE "Tweet".parent_tweet_id = "Tweet".id AND "Tweet".tweet_type = 'REPLY') as comments
 FROM "Tweet"
 LEFT JOIN media ON media."tweetId" = "Tweet".id
 JOIN users ON "Tweet".user_id = users.id
@@ -238,7 +241,8 @@ SELECT
     (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) AS retweets,
     EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${userId}) AS retweeted,
     retweeter.username AS retweeter_username,
-    retweets.created_at AS retweet_createdAt -- Keep this as the last column
+    retweets.created_at AS retweet_createdAt,
+    (SELECT COUNT(*) FROM "Tweet" WHERE "Tweet".parent_tweet_id = "Tweet".id AND "Tweet".tweet_type = 'REPLY') as comments
 FROM retweets
 JOIN "Tweet" ON retweets.parent_tweet_id = "Tweet".id
 LEFT JOIN media ON media."tweetId" = "Tweet".id
@@ -286,7 +290,8 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
                (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets,
                 EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${userId}) AS retweeted,
                 NULL::text as retweeter_username,
-                "Tweet"."createdAt" AS retweet_createdAt
+                "Tweet"."createdAt" AS retweet_createdAt,
+                (SELECT COUNT(*) FROM "Tweet" WHERE "Tweet".parent_tweet_id = "Tweet".id AND "Tweet".tweet_type = 'REPLY') as comments
         FROM "Tweet" 
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
@@ -316,7 +321,9 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
                (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets,
                 EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${userId}) AS retweeted,
                 retweeter.username as retweeter_username,
-                retweets.created_at AS retweet_createdAt
+                retweets.created_at AS retweet_createdAt,
+                (SELECT COUNT(*) FROM "Tweet" WHERE "Tweet".parent_tweet_id = "Tweet".id AND "Tweet".tweet_type = 'REPLY') as comments
+
         FROM retweets
         JOIN "Tweet" ON "Tweet".id = retweets.parent_tweet_id
         JOIN users ON "Tweet".user_id = users.id
@@ -361,7 +368,9 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
                (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets,
                EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${id}) AS retweeted,
                 NULL::text as retweeter_username,
-                "Tweet"."createdAt" AS retweet_createdAt
+                "Tweet"."createdAt" AS retweet_createdAt,
+                (SELECT COUNT(*) FROM "Tweet" WHERE "Tweet".parent_tweet_id = "Tweet".id AND "Tweet".tweet_type = 'REPLY') as comments
+
         FROM "Tweet" 
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
@@ -391,7 +400,9 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
                (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets,
                EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${id}) AS retweeted,
                 retweeter.username as retweeter_username,
-                retweets.created_at AS retweet_createdAt
+                retweets.created_at AS retweet_createdAt,
+                (SELECT COUNT(*) FROM "Tweet" WHERE "Tweet".parent_tweet_id = "Tweet".id AND "Tweet".tweet_type = 'REPLY') as comments
+
         FROM retweets
         JOIN "Tweet" ON retweets.parent_tweet_id = "Tweet".id
         JOIN users ON "Tweet".user_id = users.id 
@@ -432,7 +443,8 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
                null AS retweeter,
                false AS retweeted,
                (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
-               (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets
+               (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets,
+               0 AS comments
         FROM "Tweet" 
         INNER JOIN users ON "Tweet".user_id = users.id 
         LEFT JOIN media ON media."tweetId" = "Tweet".id 
@@ -452,42 +464,45 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
 }
 
 export async function pullTweetById(userId: string, id: string) {
-    const results = await db.execute(sql` SELECT "Tweet".id, 
-               "Tweet".content, 
-               "Tweet".parent_tweet_id, 
-               "Tweet".tweet_type, 
-               "Tweet"."createdAt", 
-STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
-               users.name, 
-               users.cover_image_url, 
-               users.username,
-               (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
-               EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${userId}) AS liked,
-               (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets,
-                EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${userId}) AS retweeted,
-                NULL::text as retweeter_username,
-                "Tweet"."createdAt" AS retweet_createdAt
-        FROM "Tweet" 
-        INNER JOIN users ON "Tweet".user_id = users.id 
-        LEFT JOIN media ON media."tweetId" = "Tweet".id 
-        WHERE "Tweet".id = ${id}
-        GROUP BY "Tweet".id, 
-             "Tweet".content, 
-             "Tweet".parent_tweet_id, 
-             "Tweet".tweet_type, 
-             "Tweet"."createdAt", 
-             users.name, 
-             users.cover_image_url, 
-             users.username`);
-
+    const results = await db.execute(sql` SELECT 
+    t.id, 
+    t.content, 
+    t.parent_tweet_id, 
+    t.tweet_type, 
+    t."createdAt", 
+    STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info,
+    users.name, 
+    users.cover_image_url, 
+    users.username,
+    (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = t.id) AS likes,
+    EXISTS (SELECT 1 FROM "Likes" WHERE "Likes".tweet_id = t.id AND "Likes".user_id = ${userId}) AS liked,
+    (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = t.id) AS retweets,
+    EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = t.id AND retweets.user_id = ${userId}) AS retweeted,
+    (SELECT COUNT(*) 
+     FROM "Tweet" AS t_sub 
+     WHERE t_sub.parent_tweet_id = t.id AND t_sub.tweet_type = 'REPLY') AS comments,
+    NULL::text AS retweeter_username,
+    t."createdAt" AS retweet_createdAt
+FROM "Tweet" AS t
+INNER JOIN users ON t.user_id = users.id 
+LEFT JOIN media ON media."tweetId" = t.id 
+WHERE t.id = ${id}
+GROUP BY 
+    t.id, 
+    t.content, 
+    t.parent_tweet_id, 
+    t.tweet_type, 
+    t."createdAt", 
+    users.name, 
+    users.cover_image_url, 
+    users.username;
+`);
+    console.log(results.rows)
     return results
 }
 
-export async function pullCommentsById(id: string, offset: string | number) {
-    const session = await auth();
-    if (!session || !session.user) {
-        return { rows: [] }
-    }
+export async function pullCommentsById(replyId: string, offset: string | number, userId?: string) {
+
     const results = await db.execute(sql` SELECT "Tweet".id, 
         "Tweet".content, 
         "Tweet".parent_tweet_id, 
@@ -498,16 +513,17 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
         users.cover_image_url, 
         users.username,
         (SELECT COUNT(*) FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id ) as likes,
-        EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${session.user.id}) AS liked,
+        EXISTS (SELECT * FROM "Likes" WHERE "Likes".tweet_id = "Tweet".id AND "Likes".user_id = ${userId || "0"}) AS liked,
         (SELECT COUNT(*) FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id) as retweets,
-        EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${session.user.id}) AS retweeted,
-        "Tweet"."createdAt" AS retweet_createdAt
-        replyingTo.username as replyingTo
- FROM "Tweet".parent_tweet_id = ${id}
+        EXISTS (SELECT 1 FROM retweets WHERE retweets.parent_tweet_id = "Tweet".id AND retweets.user_id = ${userId || "0"}) AS retweeted,
+        replyingTo.username as "replyingTo",
+        (SELECT COUNT(*) FROM "Tweet" WHERE "Tweet".parent_tweet_id = "Tweet".id AND "Tweet".tweet_type = 'REPLY') as comments
+
+ FROM "Tweet"
  INNER JOIN users ON "Tweet".user_id = users.id
- INNER JOIN users ON "Tweet".user_id = (SELECT (user_id) FROM "Tweet" WHERE "Tweet".id = ${id}) AS replyingTo
+ INNER JOIN users AS replyingTo ON "Tweet".user_id = (SELECT (user_id) FROM "Tweet" WHERE "Tweet".id = ${replyId})
  LEFT JOIN media ON media."tweetId" = "Tweet".id 
- WHERE "Tweet".Parentid = ${id} AND "Tweet".tweet_type = 'REPLY'
+ WHERE "Tweet".parent_tweet_id = ${replyId} AND "Tweet".tweet_type = 'REPLY'
  GROUP BY "Tweet".id, 
       "Tweet".content, 
       "Tweet".parent_tweet_id, 
@@ -515,11 +531,11 @@ STRING_AGG(CONCAT(media.id, '|', media.url, '|', media.type), ',') AS media_info
       "Tweet"."createdAt", 
       users.name, 
       users.cover_image_url, 
-      users.username
-    ORDER BY retweet_createdAt DESC
+      users.username,
+      replyingTo.username
+    ORDER BY "Tweet"."createdAt" DESC
     OFFSET ${typeof offset == "string" ? parseInt(offset) : offset}
     LIMIT 20`);
-
     return results
 }
 

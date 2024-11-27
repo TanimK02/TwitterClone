@@ -23,10 +23,10 @@ type MediaInfo = {
     type: string;
 };
 
-export default function FocusedTweet({ name = "Billy", username = "Bob James", time = "2024-10-30T12:34:56.123Z", content = "Hello new tweet", mediaUrls, profileUrl = "", likes = 0, id, liked = false, retweets = 0,
+export default function FocusedTweet({ comments, name = "Billy", username = "Bob James", time = "2024-10-30T12:34:56.123Z", content = "Hello new tweet", mediaUrls, profileUrl = "", likes = 0, id, liked = false, retweets = 0,
     retweeted = false, retweeter = ""
 }:
-    { name: string, username: string, time: string, content: string, mediaUrls?: MediaInfo[] | null, profileUrl: string, likes: number, id: string, liked?: boolean, retweets: number, retweeted: boolean, retweeter: null | string }
+    { comments: number, name: string, username: string, time: string, content: string, mediaUrls?: MediaInfo[] | null, profileUrl: string, likes: number, id: string, liked?: boolean, retweets: number, retweeted: boolean, retweeter: null | string }
 ) {
     const [curLikes, setLikes] = useState<number>(likes);
     const [heart, setHeart] = useState<any>(liked ? redHeart : grayHeart);
@@ -123,7 +123,7 @@ export default function FocusedTweet({ name = "Billy", username = "Bob James", t
                             <div className={styles.FooterContainer}>
                                 <div className={styles.CRHS}>
                                     <div className={styles.ImageContainer}>
-                                        <Image src={commentPic} height={23} width={23} alt="open comments and comment"></Image> <span>0</span>
+                                        <Image src={commentPic} height={23} width={23} alt="open comments and comment"></Image> <span>{comments}</span>
                                     </div>
                                     <div className={styles.ImageContainer} onClick={async () => {
                                         changeRetweet()

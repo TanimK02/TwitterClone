@@ -17,13 +17,30 @@ type Tweet = {
     liked: boolean;
     retweets: number;
     retweeted: boolean;
-    retweeter_username: string;
     replyingTo: string;
+    comments: number;
 };
 export default function CommentFeed({ parentId, user }: { parentId: string, user: string }) {
     const [tweets, updateTweets] = useState<Tweet[]>([]);
 
-
+    const loadComments = async (offset: number, erase: boolean = false) => {
+        const data = fetch(`/api/pullComments?tweetId=${parentId}&offset=${offset}`).then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch tweets');
+            }
+            return response.json(); // Parse the response JSON
+        }).then(data => {
+            if (erase) {
+                updateTweets([...data.results])
+            } else {
+                updateTweets([...tweets, ...data.results]);
+            }
+            // Do something with data.results if your response format is { results: [...] }
+        })
+            .catch(error => {
+                console.error('Error loading tweets:', error);
+            });
+    }
     function parseMediaInfo(mediaInfo: string) {
         // Split the mediaInfo string by comma to separate each media entry
         const mediaItems = mediaInfo.split(',');
@@ -43,14 +60,13 @@ export default function CommentFeed({ parentId, user }: { parentId: string, user
 
 
     useEffect(() => {
-
-
-    })
+        loadComments(0);
+    }, [])
     return (
         <>
             <CommentPost user={user} parentId={parentId}></CommentPost>
             <div className={styles.FeedContainer}>
-                {tweets.map((tweet, index) => <TweetItem key={index} retweeter={tweet.retweeter_username} retweeted={tweet.retweeted} retweets={tweet.retweets} liked={tweet.liked} id={tweet.id} likes={tweet.likes} profileUrl={tweet.cover_image_url || ""} name={tweet.name} username={tweet.username} time={tweet.createdAt} content={tweet.content} mediaUrls={tweet.media_info ? parseMediaInfo(tweet.media_info) : []} ></TweetItem>)}
+                {tweets.map((tweet, index) => <TweetItem key={index} comments={tweet.comments} retweeter={null} replyingTo={tweet.replyingTo} retweeted={tweet.retweeted} retweets={tweet.retweets} liked={tweet.liked} id={tweet.id} likes={tweet.likes} profileUrl={tweet.cover_image_url || ""} name={tweet.name} username={tweet.username} time={tweet.createdAt} content={tweet.content} mediaUrls={tweet.media_info ? parseMediaInfo(tweet.media_info) : []} ></TweetItem>)}
             </div>
         </>
     )

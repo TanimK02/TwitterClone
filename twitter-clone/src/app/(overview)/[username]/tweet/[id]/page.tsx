@@ -18,6 +18,7 @@ type Tweet = {
     retweets: number;
     retweeted: boolean;
     retweeter_username: string;
+    comments: number;
 };
 
 export default async function TweetNdComments({
@@ -57,7 +58,7 @@ export default async function TweetNdComments({
     return (<>
         <div style={{ display: "flex", flexDirection: "column" }}>
             <TopNav></TopNav>
-            {tweets.map((tweet, index) => <FocusedTweet key={index} retweeter={tweet.retweeter_username} retweeted={tweet.retweeted} retweets={tweet.retweets} liked={tweet.liked} id={tweet.id} likes={tweet.likes} profileUrl={tweet.cover_image_url || ""} name={tweet.name} username={tweet.username} time={tweet.createdAt} content={tweet.content} mediaUrls={parseMediaInfo(tweet.media_info!)} ></FocusedTweet>)}
+            {tweets.map((tweet, index) => <FocusedTweet key={index} comments={tweet.comments} retweeter={tweet.retweeter_username} retweeted={tweet.retweeted} retweets={tweet.retweets} liked={tweet.liked} id={tweet.id} likes={tweet.likes} profileUrl={tweet.cover_image_url || ""} name={tweet.name} username={tweet.username} time={tweet.createdAt} content={tweet.content} mediaUrls={parseMediaInfo(tweet.media_info!)} ></FocusedTweet>)}
         </div>
     </>)
 }

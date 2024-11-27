@@ -104,7 +104,10 @@ export default function CommentPost({ user = "Home", parentId, callback }: { use
                 mediaIds.push(mediaId)
 
             }
-            await createReply({ parentId, content, mediaIds })
+            const result = await createReply({ parentId, content, mediaIds })
+            if ("failure" in result) {
+                throw new Error("failed to create tweet")
+            }
             setImages([])
             if (text.current) {
                 text.current.value = "";

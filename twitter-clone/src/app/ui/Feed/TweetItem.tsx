@@ -24,10 +24,14 @@ type MediaInfo = {
 };
 
 export default function TweetItem({ name = "Billy", username = "Bob James", time = "2024-10-30T12:34:56.123Z", content = "Hello new tweet", mediaUrls, profileUrl = "", likes = 0, id, liked = false, retweets = 0,
-    retweeted = false, retweeter = ""
+    retweeted = false, retweeter = "", replyingTo, comments
 }:
-    { name: string, username: string, time: string, content: string, mediaUrls?: MediaInfo[], profileUrl: string, likes: number, id: string, liked?: boolean, retweets: number, retweeted: boolean, retweeter: null | string }
+    {
+        name: string, username: string, time: string, content: string, mediaUrls?: MediaInfo[], profileUrl: string, likes: number, id: string, liked?: boolean, retweets: number, retweeted: boolean, retweeter: null | string, replyingTo: null | string,
+        comments: number;
+    }
 ) {
+
     const [curLikes, setLikes] = useState<number>(likes);
     const [heart, setHeart] = useState<any>(liked ? redHeart : grayHeart);
     const [isLiked, setIsLiked] = useState<boolean>(liked);
@@ -144,12 +148,12 @@ export default function TweetItem({ name = "Billy", username = "Bob James", time
                                 <div className={styles.ImageContainer} onClick={() => {
                                     window.location.href = `/${username}/tweet/${id}`
                                 }} >
-                                    <Image src={commentPic} height={20} width={20} alt="open comments and comment"></Image> <span>0</span>
+                                    <Image src={commentPic} height={20} width={20} alt="open comments and comment"></Image> <span>{comments}</span>
                                 </div>
                                 <div className={styles.ImageContainer} onClick={async (event) => {
                                     event.stopPropagation()
                                     changeRetweet()
-                                    const result = retweet(id)
+                                    const result = await retweet(id)
                                     if (!result) {
                                         changeRetweet()
                                     }
