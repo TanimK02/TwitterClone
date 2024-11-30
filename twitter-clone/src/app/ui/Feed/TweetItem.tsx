@@ -143,7 +143,9 @@ export default function TweetItem({ name = "Billy", username = "Bob James", time
                             </div>
                             {mediaUrls && <Media media={mediaUrls}></Media>}
                         </div>
-                        <div className={styles.FooterContainer}>
+                        <div className={styles.FooterContainer} onClick={async (event) => {
+                            event.stopPropagation()
+                        }} >
                             <div className={styles.CRHS}>
                                 <div className={styles.ImageContainer} onClick={() => {
                                     window.location.href = `/${username}/tweet/${id}`

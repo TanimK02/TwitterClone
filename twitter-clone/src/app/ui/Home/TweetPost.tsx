@@ -135,6 +135,20 @@ export default function TweetPost({ callback }: { callback: (erase?: boolean) =>
 
         fetchCoverImage();
     }, []);
+
+    const [value, setValue] = useState<string>("");
+
+    const handleText = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setValue(e.target.value)
+    }
+
+    useEffect(() => {
+        const textarea = text.current;
+        if (textarea) {
+            textarea.style.height = "auto";
+            textarea.style.height = `${textarea.scrollHeight}px`;
+        }
+    }, [value])
     return (
         <>
             <div className={styles.tweetPostContainer}>
@@ -143,7 +157,7 @@ export default function TweetPost({ callback }: { callback: (erase?: boolean) =>
                 </div>
                 <form className={styles.tweetContainer} onSubmit={handleSubmit}>
                     <div className={styles.inputContainer}>
-                        <textarea ref={text} name="content" placeholder='What is happening?!' required></textarea>
+                        <textarea rows={1} onChange={handleText} ref={text} name="content" placeholder='What is happening?!' required></textarea>
                         <div ref={picVidDiv} className={styles.imageContainer}>
                             {
                                 images.map((mediaData, index) => (

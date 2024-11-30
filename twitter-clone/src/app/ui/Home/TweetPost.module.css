@@ -1,7 +1,7 @@
 .tweetPostContainer {
     display: flex;
     width: 100%;
-    min-height: 15%;
+    min-height: 100px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.183);
 }
 
@@ -17,6 +17,7 @@
 
 .profileContainer img {
     border-radius: 9999px;
+    cursor: pointer;
 }
 
 .tweetContainer {
@@ -28,20 +29,22 @@
 
 .inputContainer {
     width: 100%;
-    min-height: 50%;
+    min-height: 50px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .inputContainer textarea {
-    height: 60%;
     width: 95%;
     font-size: 1.2rem;
     background-color: transparent;
     border: none;
     resize: none;
-
+    overflow: hidden;
+    min-height: 50px;
+    box-sizing: border-box;
+    padding: 10px;
 }
 
 .inputContainer textarea:focus {
@@ -54,6 +57,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-grow: 1;
 
 }
 
@@ -66,12 +70,17 @@
     font: inherit;
     border-radius: 20px;
     margin-bottom: 10px;
+    cursor: pointer;
 }
 
 .buttonContainer {
     display: flex;
     justify-content: space-around;
     width: 10%;
+}
+
+.buttonContainer img {
+    cursor: pointer;
 }
 
 .buttonContainer img:nth-of-type(1) {
